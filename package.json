@@ -1,0 +1,55 @@
+{
+	"name": "oqimrn",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"start": "node node_modules/react-native/local-cli/cli.js start",
+		"test": "jest"
+	},
+	"dependencies": {
+		"2fa": "^0.1.2",
+		"buffer": "^5.1.0",
+		"crypto-js": "^3.1.9-1",
+		"draft-js": "^0.10.5",
+		"mobx": "^5.0.3",
+		"mobx-react": "^5.2.3",
+		"moment": "^2.22.2",
+		"react": "^16.5.2",
+		"react-dom": "^16.5.2",
+		"react-native": "^0.54.0",
+		"react-native-actionsheet": "^2.4.2",
+		"react-native-calendars": "^1.20.0",
+		"react-native-cookies": "^3.2.0",
+		"react-native-custom-action-sheet": "0.0.11",
+		"react-native-datepicker": "^1.7.2",
+		"react-native-datetime": "^0.1.2",
+		"react-native-easy-loading": "^1.0.5",
+		"react-native-easy-toast": "^1.0.9",
+		"react-native-image-placeholder": "^1.0.14",
+		"react-native-loader": "^1.2.1",
+		"react-native-modal-dropdown": "^0.6.2",
+		"react-native-progress": "^3.5.0",
+		"react-native-radio-master": "^1.0.1",
+		"react-native-restart": "0.0.6",
+		"react-native-root-siblings": "^3.1.7",
+		"react-native-root-toast": "^2.2.1",
+		"react-native-storage": "^0.2.2",
+		"react-native-svg": "^6.3.1",
+		"react-native-vector-icons": "^4.6.0",
+		"react-navigation": "^1.5.1",
+		"react-redux": "^5.0.7",
+		"redux": "^4.0.1",
+		"react-native-iphone-x-helper": "1.2.0"
+	},
+	"devDependencies": {
+		"babel-jest": "22.4.1",
+		"babel-plugin-transform-decorators-legacy": "^1.3.5",
+		"babel-preset-react-native": "4.0.0",
+		"babel-preset-react-native-stage-0": "^1.0.1",
+		"jest": "22.4.2",
+		"react-test-renderer": "^16.3.0-alpha.1"
+	},
+	"jest": {
+		"preset": "react-native"
+	}
+}
