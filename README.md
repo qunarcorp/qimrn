@@ -3,6 +3,9 @@
 npm install
 
 React Native Version： 0.54
+
+export {parseDate, xdateToData} from '../src/interface';
+
 打离线包命令
 
 Android: react-native bundle --entry-file index.android.js --dev false --bundle-output ./android/bundle/index.android.bundle --platform android --assets-dest ./android/bundle
