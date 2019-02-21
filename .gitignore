@@ -35,6 +35,7 @@ Thumbs.db
 
 # pods ignore
 Pods/
+package-lock.json
 
 # node module ignore
 node_modules/
