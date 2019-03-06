@@ -54,4 +54,8 @@ Startalk移动端的React-Native项目，目前使用的React-Native版本为0.5
 	4. 重新运行IMSDK-iOS项目/你的项目
 	```
 2. 安卓离线包调试
-
+	```	
+	1.在qimrn项目根目录下执行react-native bundle --entry-file index.android.js --dev false --bundle-output ./android/bundle/index.android.bundle --platform android --assets-dest ./android/bundle
+	2.蒋android/bundle目录下的index.android.bundle文件名称修改为index.androidserver.bundle
+	3.复制index.androidserver.bundle文件到native工程app下的assets目录
+	```
