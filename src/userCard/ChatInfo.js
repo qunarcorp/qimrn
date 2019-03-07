@@ -169,7 +169,7 @@ export default class ChatInfo extends Component {
         })
     }
 
-    changeChatTop() {
+    changeChatTop(stickyState2) {
         let params = {};
         if (this.state.name === '' || this.state.name === null ||
             this.state.userId === '' || this.state.userId === null
@@ -185,7 +185,7 @@ export default class ChatInfo extends Component {
 
                 } else {
                     Alert.alert("提示", "会话置顶操作失败");
-                    this.setState({stickyState: !stickyState});
+                    this.setState({stickyState: !stickyState2});
                 }
             }
         )
