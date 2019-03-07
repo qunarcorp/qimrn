@@ -38,7 +38,12 @@ Startalk移动端的React-Native项目，目前使用的React-Native版本为0.5
 	4. 在第一行新加 return [NSURL URLWithString:@"http://你的本机ip:8081/index.ios.bundle?platform=ios&dev=true"];
 	```
 2. 安卓真机调试
-
+    ```
+    1. 在qimrn项目根目录下执行npm start
+    2. 调用QIMSDK.getInstance().openDebug()打开debug模式//最好在application里面调用
+    3. 手机摇一摇，设置debug的本地ip和端口8081
+    4. reload相关RN页面
+    ```
 ## 离线包调试
 1. iOS离线包调试
 	
@@ -49,4 +54,8 @@ Startalk移动端的React-Native项目，目前使用的React-Native版本为0.5
 	4. 重新运行IMSDK-iOS项目/你的项目
 	```
 2. 安卓离线包调试
-
+	```	
+	1.在qimrn项目根目录下执行react-native bundle --entry-file index.android.js --dev false --bundle-output ./android/bundle/index.android.bundle --platform android --assets-dest ./android/bundle
+	2.蒋android/bundle目录下的index.android.bundle文件名称修改为index.androidserver.bundle
+	3.复制index.androidserver.bundle文件到native工程app下的assets目录
+	```
