@@ -187,8 +187,8 @@ export default class ChatInfo extends Component {
                     Alert.alert("提示", "会话置顶操作失败");
                     this.setState({stickyState: !stickyState2});
                 }
-            }
-        )
+            }.bind(this)
+        );
     }
 
     changeChatPushState(pushState) {
