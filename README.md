@@ -26,6 +26,7 @@ Startalk移动端的React-Native项目，目前使用的React-Native版本为0.5
 ## 工程配置:
 1. 通过git下载qimrn项目到本地
 2. 在根目录下执行`npm install`
+3. 参照官方文档安装[react-native](https://facebook.github.io/react-native/docs/getting-started.html)
 3. 打开`node_modules`目录下的`react-native-calendats/src/index.js`, 添加`export {parseDate, xdateToData} from '../src/interface';`
 
 ## 真机调试
