@@ -49,7 +49,7 @@ Startalk移动端的React-Native项目，目前使用的React-Native版本为0.5
 	
 	```	
 	1. 在qimrn项目根目录下执行mkdir bundle
-	2. 在qimrn项目根目录下执行bash packageBuild ios
+	2. 在qimrn项目根目录下执行bash packageBundle.sh ios
 	3. 复制Build出来的clock_in.ios.jsbundle文件及assets文件夹到IMSDK-iOS项目下/你的项目的QIMRNKit.bundle中
 	4. Clean IMSDK-iOS项目/你的项目
 	5. 重新运行IMSDK-iOS项目/你的项目
