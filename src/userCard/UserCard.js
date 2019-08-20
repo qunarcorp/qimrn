@@ -45,6 +45,7 @@ export default class UserCard extends Component {
         super(props);
 
         let showOrganizational = AppConfig.getShowOrganizational();
+        let showWorkWorld = AppConfig.isShowWorkWorld();
         this.state = {
             userId: this.props.navigation.state.params.UserId,
             userInfo: {},
@@ -53,6 +54,8 @@ export default class UserCard extends Component {
             isFriend: false,
             userMedal: null,
             showLeader: showOrganizational === 1 ? false : true,
+            isShowWrokWorldB: showWorkWorld,
+
         };
         this.unMount = false;
     }
@@ -77,6 +80,10 @@ export default class UserCard extends Component {
                 this.updateNick(params);
             }.bind(this));
 
+            this.refreshLeader = DeviceEventEmitter.addListener('updateLeader', function (params) {
+                this.updateLeader(params);
+            }.bind(this));
+
             this.refreshUserMedal = DeviceEventEmitter.addListener('updateMedal', function (params) {
                 this.updateMedal(params);
             }.bind(this));
@@ -86,20 +93,33 @@ export default class UserCard extends Component {
         }
     }
 
-    setting(){
+    setting() {
         this.props.navigation.navigate('UserSetting', {
             'innerVC': true,
-            'userId':this.state.userId,
+            'userId': this.state.userId,
         });
 
     }
 
     updateNick(params) {
         let info = params.UserInfo;
-        this.setState({userInfo:info});
+        let userId = params.UserId;
+        if (this.state.userId == userId) {
+
+            this.setState({userInfo: info});
+            this.setState({userMood:info});
+        }
         // this.props.navigation.setParams({
         //     title: info["Name"],
         // });
+    }
+
+    updateLeader(params) {
+        let userId = params.UserId;
+        if (this.state.userId == userId) {
+            let info = params.LeaderInfo;
+            this.setState({userLead: info});
+        }
     }
 
     updateMedal(params) {
@@ -133,7 +153,9 @@ export default class UserCard extends Component {
         //     }.bind(this));
 
         NativeModules.QimRNBModule.getUserMood(this.state.userId, function (responce) {
-            this.setState({userMood: responce.UserInfo});
+            if(responce){
+                this.setState({userMood: responce.UserInfo});
+            }
 
         }.bind(this));
         NativeModules.QimRNBModule.getUserLead(this.state.userId, function (responce) {
@@ -162,11 +184,14 @@ export default class UserCard extends Component {
         if (this.subscription) {
             this.subscription.remove();
         }
-        if( this.refreshNick){
+        if (this.refreshNick) {
             this.refreshNick.remove();
         }
         if (this.refreshUserMedal) {
             this.refreshUserMedal.remove();
+        }
+        if (this.refreshLeader) {
+            this.refreshLeader.remove();
         }
     }
 
@@ -211,9 +236,19 @@ export default class UserCard extends Component {
         let userRemark = this.state.userInfo["Remarks"];
         this.props.navigation.navigate('UserMedal', {
             'userId': this.state.userInfo["UserId"],
-            "name": (userRemark=="") ?  userName:userRemark,
+            "name": (userRemark == "") ? userName : userRemark,
             'userMedals': this.state.userMedal,
         });
+    }
+
+
+    openUserWorkWorld() {
+        let param = {};
+        if (this.state.userInfo["UserId"] === '' || this.state.userInfo["UserId"] === null) {
+            return
+        }
+        param["UserId"] = this.state.userInfo["UserId"];
+        NativeModules.QimRNBModule.openUserWorkWorld(param);
     }
 
     //打开用户名片
@@ -245,7 +280,7 @@ export default class UserCard extends Component {
             if (this.subscription) {
                 this.subscription.remove();
             }
-            if( this.refreshNick){
+            if (this.refreshNick) {
                 this.refreshNick.remove();
             }
         }
@@ -340,40 +375,63 @@ export default class UserCard extends Component {
     }
 
     _showCommentAndEmail() {
-        if (Platform.OS == 'ios') {
+        if (!AppConfig.notNeedShowEmailInfo()) {
+            if (Platform.OS == 'ios') {
+                return (
+                    <View style={styles.otherInfo}>
+                        <TouchableOpacity style={styles.cellContentView} onPress={() => {
+                            this.sendMail();
+
+                        }}>
+                            <Text style={styles.cellTitle}>发送邮件</Text>
+                            <Text style={styles.cellValue}></Text>
+                            <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
+                        </TouchableOpacity>
+                    </View>);
+            } else {
+                return (
+                    <View style={styles.androidOtherInfo}>
+
+                        <TouchableOpacity style={styles.cellContentView} onPress={() => {
+                            this.sendMail();
+
+                        }}>
+                            <Text style={styles.cellTitle}>发送邮件</Text>
+                            <Text style={styles.cellValue}></Text>
+                            <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
+                        </TouchableOpacity>
+                    </View>
+                );
+
+            }
+        }
+    }
+
+
+    _isShowWorkWorld() {
+
+        if (this.state.isShowWrokWorldB) {
+
             return (
-                <View style={styles.otherInfo}>
-                    <TouchableOpacity style={styles.cellContentView} onPress={() => {
-                        this.commentUser();
-                    }}>
-                        <Text style={styles.cellTitle}>评论</Text>
-                        <Text style={styles.cellValue}></Text>
-                        <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.cellContentView} onPress={() => {
-                        this.sendMail();
+                <View>
+                    <View style={styles.line}>
+                    </View>
+                    <View style={styles.androidOtherInfo}>
+                        <TouchableOpacity style={styles.cellContentView} onPress={() => {
+                            this.openUserWorkWorld();
 
-                    }}>
-                        <Text style={styles.cellTitle}>发送邮件</Text>
-                        <Text style={styles.cellValue}></Text>
-                        <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
-                    </TouchableOpacity>
-                </View>);
-        } else {
-            return (
-                <View style={styles.androidOtherInfo}>
+                        }}>
 
-                    <TouchableOpacity style={styles.cellContentView} onPress={() => {
-                        this.sendMail();
 
-                    }}>
-                        <Text style={styles.cellTitle}>发送邮件</Text>
-                        <Text style={styles.cellValue}></Text>
-                        <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
-                    </TouchableOpacity>
+                            <Text style={styles.cellTitle}>驼圈</Text>
+                            <Text style={styles.cellValue}></Text>
+                            <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
+
+
+                        </TouchableOpacity>
+                    </View>
                 </View>
             );
-
         }
     }
 
@@ -382,13 +440,12 @@ export default class UserCard extends Component {
         let leader = "";
         let leaderId = "";
         let empno = "";
-
-        if (this.state.userLead != null) {
-            leader = this.state.userLead["Leader"];
-            leaderId = this.state.userLead["LeaderId"];
-            empno = this.state.userLead["Empno"];
-        }
-        if (this.state.showLeader) {
+        if (!AppConfig.notNeedShowLeaderInfo() && !AppConfig.notNeedShowMobileInfo()) {
+            if (this.state.userLead != null) {
+                leader = this.state.userLead["Leader"];
+                leaderId = this.state.userLead["LeaderId"];
+                empno = this.state.userLead["Empno"];
+            }
             return (
                 <View style={styles.workInfo}>
                     <View style={styles.cellContentView}>
@@ -411,7 +468,35 @@ export default class UserCard extends Component {
                 </View>
 
             );
+        }else if(!AppConfig.notNeedShowLeaderInfo()){
+            return (
+                <View style={styles.workInfo}>
+                    <View style={styles.cellContentView}>
+                        <Text style={styles.cellTitle}>直接上属</Text>
+                        <Text style={styles.cellValue} onPress={() => {
+                            this.openUserCard();
+                        }}>{leader}</Text>
+                    </View>
+                    <View style={styles.cellContentView}>
+                        <Text style={styles.cellTitle}>工号</Text>
+                        <Text style={styles.cellValue}>{empno}</Text>
+                    </View>
+                </View>
 
+            );
+        }else if(!AppConfig.notNeedShowMobileInfo()){
+            return (
+                <View style={styles.workInfo}>
+                    <View style={styles.cellContentView}>
+                        <Text style={styles.cellTitle}>手机号</Text>
+                        <Text style={styles.phoneValue} onPress={() => {
+                            console.log("点击查看手机号");
+                            this.showUserPhoneNumber();
+                        }}>点击查看</Text>
+                    </View>
+                </View>
+
+            );
         }
     }
 
@@ -420,7 +505,7 @@ export default class UserCard extends Component {
         return (
             <View style={styles.userMealIconContentView}>
                 <Image
-                    source={{uri:url}}
+                    source={{uri: url}}
                     style={styles.userMealIcon}
                 />
             </View>
@@ -456,7 +541,7 @@ export default class UserCard extends Component {
         }
     }
 
-    _showDepartment(userId,department) {
+    _showDepartment(userId, department) {
         if (AppConfig.isQtalk()) {
             return (
                 <View>
@@ -481,6 +566,57 @@ export default class UserCard extends Component {
         }
     }
 
+    _showBottomTabBar() {
+        let isFriendBOOL = this.state.isFriend;
+        // console.log("isFriendBOOL = " + this.state.isFriend);
+        let friendText = isFriendBOOL == true ? "删除好友" : "添加好友";
+        let friendStyle = isFriendBOOL == true ? styles.deleteFriendBtn : styles.addFriendBtn;
+        let friendTextColor = isFriendBOOL == true ? "#FFF" : "#333333";
+       if (AppConfig.notNeedShowFriendBtn()) {
+           return(
+               <View>
+                   <View style={styles.tabBar}>
+                       <View style={styles.wholeTab}>
+
+                           <TouchableOpacity style={styles.sendMessageBtn} onPress={() => {
+                               this.openUserChat();
+                           }}>
+                               <Text style={{color: "#FFF", fontSize: 16}}>
+                                   发送消息
+                               </Text>
+                           </TouchableOpacity>
+                       </View>
+                   </View>
+               </View>
+           )
+       } else {
+           return(
+               <View>
+               <View style={styles.tabBar}>
+                   <View style={styles.leftTab}>
+
+                       <TouchableOpacity style={friendStyle} onPress={() => {
+                           isFriendBOOL == true ? this.rndeleteUserFriend() : this.addUserFriend();
+                       }}>
+                           <Text style={{color: friendTextColor, fontSize: 16}}>
+                               {friendText}
+                           </Text>
+                       </TouchableOpacity>
+                   </View>
+                   <View style={styles.rightTab}>
+                       <TouchableOpacity style={styles.sendMessageBtn} onPress={() => {
+                           this.openUserChat();
+                       }}>
+                           <Text style={{color: "#FFF", fontSize: 16}}>
+                               发送消息
+                           </Text>
+                       </TouchableOpacity>
+                   </View>
+               </View>
+               </View>
+           )
+       }
+    }
 
     render() {
         let nickName = "";
@@ -505,11 +641,6 @@ export default class UserCard extends Component {
             mood = this.state.userMood["Mood"];
         }
 
-        let isFriendBOOL = this.state.isFriend;
-        // console.log("isFriendBOOL = " + this.state.isFriend);
-        let friendText = isFriendBOOL == true ? "删除好友" : "添加好友";
-        let friendStyle = isFriendBOOL == true ? styles.deleteFriendBtn : styles.addFriendBtn;
-        let friendTextColor = isFriendBOOL == true ? "#FFF" : "#333333";
         return (
             <View style={styles.wrapper}>
                 <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
@@ -542,32 +673,14 @@ export default class UserCard extends Component {
 
                     {this._showDepartment(userId, department)}
                     {this._showLeader()}
+
+                    {this._isShowWorkWorld()}
                     <View style={styles.line}>
                     </View>
                     {this._showCommentAndEmail()}
 
                 </ScrollView>
-                <View style={styles.tabBar}>
-                    <View style={styles.leftTab}>
-
-                        <TouchableOpacity style={friendStyle} onPress={() => {
-                            isFriendBOOL == true ? this.rndeleteUserFriend() : this.addUserFriend();
-                        }}>
-                            <Text style={{color: friendTextColor, fontSize: 16}}>
-                                {friendText}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.rightTab}>
-                        <TouchableOpacity style={styles.sendMessageBtn} onPress={() => {
-                            this.openUserChat();
-                        }}>
-                            <Text style={{color: "#FFF", fontSize: 16}}>
-                                发送消息
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
+                {this._showBottomTabBar()}
             </View>
         );
     }
@@ -587,6 +700,9 @@ var styles = StyleSheet.create({
     rightTab: {
         flex: 1,
     },
+    wholeTab: {
+        flex: 1,
+    },
     addFriendBtn: {
         flex: 1,
         marginLeft: 15,
@@ -595,7 +711,7 @@ var styles = StyleSheet.create({
         marginBottom: 10,
         backgroundColor: "#FFF",
         borderWidth: 1,
-        marginBottom: 10,
+
         borderColor: "#D1D1D1",
         borderRadius: 5,
         alignItems: "center",
@@ -609,7 +725,6 @@ var styles = StyleSheet.create({
         marginBottom: 10,
         backgroundColor: "#fe3512",
         borderWidth: 1,
-        marginBottom: 10,
         borderColor: "#D1D1D1",
         borderRadius: 5,
         alignItems: "center",
@@ -650,7 +765,7 @@ var styles = StyleSheet.create({
         flex: 1,
     },
     cellTitle: {
-        width: 60,
+        width: 150,
         color: "#333333",
         fontSize: 12,
     },
@@ -737,7 +852,7 @@ var styles = StyleSheet.create({
     leadership: {},
     mobileNo: {},
     otherInfo: {
-        height: 100,
+        height: 50,
     },
     androidOtherInfo: {
         height: 50,

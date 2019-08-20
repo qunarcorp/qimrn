@@ -1,4 +1,5 @@
 import React, {Component, PureComponent} from 'react';
+
 import {
     Text,
     StyleSheet,
@@ -17,6 +18,8 @@ import {
 import NavCBtn from "../common/NavCBtn";
 import moment from 'moment';
 import JsonUtils from "../common/JsonUtils";
+import AppConfig from "../common/AppConfig";
+
 
 import {Agenda, CalendarList, LocaleConfig, Calendar, parseDate, xdateToData} from 'react-native-calendars';
 // export {parseDate, xdateToData} from '../src/interface';
@@ -599,6 +602,13 @@ export default class TravelCalendar extends Component {
 
         });
 
+        //埋点统计
+        if (Platform.OS === 'ios') {//ios 加完native代码后 然后这个把判断可与你去掉
+
+        } else {
+            NativeModules.QimRNBModule.saveRNActLog("create itinerary","创建行程","行程页");
+        }
+
 
         //rn直接打开
         // this.props.navigation.navigate('CreateTrip', {
@@ -649,11 +659,19 @@ export default class TravelCalendar extends Component {
                 <TouchableOpacity onPress={
                     this.clickItem.bind(this, item, index)
                 }>
-                    <View style={[{backgroundColor:'#F5E3FA',borderColor:'#D080E4',borderLeftWidth:1,marginRight:13,marginTop:8,paddingTop:4,paddingBottom:4},styles.maleft64]}>
-                        <Text style={[styles.itemText,{color:'#6E0F86',}]}>{begin}-{end}</Text>
-                        <Text style={[styles.itemText,{color:'#6E0F86',}]}>{item['tripName']}</Text>
+                    <View style={[{
+                        backgroundColor: '#F5E3FA',
+                        borderColor: '#D080E4',
+                        borderLeftWidth: 1,
+                        marginRight: 13,
+                        marginTop: 8,
+                        paddingTop: 4,
+                        paddingBottom: 4
+                    }, styles.maleft64]}>
+                        <Text style={[styles.itemText, {color: '#6E0F86',}]}>{begin}-{end}</Text>
+                        <Text style={[styles.itemText, {color: '#6E0F86',}]}>{item['tripName']}</Text>
                         {/*<Text style={{}}>邀请人-{item['tripInviter']}</Text>*/}
-                        <Text style={[styles.itemText,{color:'#6E0F86',}]}>{item['appointment']}</Text>
+                        <Text style={[styles.itemText, {color: '#6E0F86',}]}>{item['appointment']}</Text>
                         <View/>
                     </View>
                     {/*<View style={{height: 1, backgroundColor: '#bdbdbd', marginLeft: 10, marginRight: 10}}></View>*/}
@@ -700,11 +718,11 @@ export default class TravelCalendar extends Component {
             return (
                 <View>
                     <Text style={[{
-                        fontSize:13,
-                        color:'#616161',
+                        fontSize: 13,
+                        color: '#616161',
                         backgroundColor: '#ffffff',
-                        marginTop:32,
-                    },styles.maleft64]}>当日全部行程</Text>
+                        marginTop: 32,
+                    }, styles.maleft64]}>当日全部行程</Text>
                 </View>
             );
         }
@@ -735,16 +753,21 @@ export default class TravelCalendar extends Component {
             return (
                 <View>
                     <Text style={[{
-                        fontSize:13,
-                        color:'#616161',
+                        fontSize: 13,
+                        color: '#616161',
                         backgroundColor: '#ffffff',
-                        marginBottom:8,
-                        marginTop:32,
-                    },styles.maleft64]}>当日下一个行程</Text>
+                        marginBottom: 8,
+                        marginTop: 32,
+                    }, styles.maleft64]}>当日下一个行程</Text>
                     <TouchableOpacity onPress={
                         this.clickItem.bind(this, showData, -1)
                     }>
-                        <View style={[{backgroundColor:'#D080E4',marginRight:13,paddingTop:4,paddingBottom:4},styles.maleft64]}>
+                        <View style={[{
+                            backgroundColor: '#D080E4',
+                            marginRight: 13,
+                            paddingTop: 4,
+                            paddingBottom: 4
+                        }, styles.maleft64]}>
                             <Text style={styles.itemText}>{begin}-{end}</Text>
                             <Text style={styles.itemText}>{showData['tripName']}</Text>
                             {/*<Text style={styles.itemText}>邀请人-{showData['tripInviter']}</Text>*/}
@@ -810,8 +833,8 @@ export default class TravelCalendar extends Component {
             //
             // })
             this.setState({
-                selectedDay:p['selectDay'],
-            },function () {
+                selectedDay: p['selectDay'],
+            }, function () {
                 this.selectDataByMonth(p['selectDay'], false, true);
             })
 
@@ -874,20 +897,20 @@ export default class TravelCalendar extends Component {
                 //     selectedDay:m+'-01',
                 // })
             }
-        }else{
+        } else {
             sd = this.state.selectedDay;
         }
 
 
         var params = {};
-        if(mandatory){
+        if (mandatory) {
             this.setState({
                 currentDay: sd,
                 selectedMonth: m,
                 selectedDay: sd,
                 // selectedDay:m+'-01',
             })
-        }else {
+        } else {
             if (m == this.state.selectedMonth) {
                 return
             } else {
@@ -1002,8 +1025,9 @@ export default class TravelCalendar extends Component {
 
     ListEmptyComponent() {
         return (
-            <View style={[{height:200,alignItems:'center',justifyContent:'center'}]}>
-                <Text style={{}}>{moment(this.state.selectedDay.toString('yyyy-MM-dd')).isBefore(moment().format('YYYY-MM-DD'))?'往期不可创建行程!':'还没有行程,快去创建行程吧!'} </Text>
+            <View style={[{height: 200, alignItems: 'center', justifyContent: 'center'}]}>
+                <Text
+                    style={{}}>{moment(this.state.selectedDay.toString('yyyy-MM-dd')).isBefore(moment().format('YYYY-MM-DD')) ? '往期不可创建行程!' : '还没有行程,快去创建行程吧!'} </Text>
             </View>
         )
     }
@@ -1053,9 +1077,14 @@ export default class TravelCalendar extends Component {
 
     render() {
         let containerStyle = {flex: 1};
-        if (Platform.OS == 'android') {
-            containerStyle = {height: (height - 105 - StatusBar.currentHeight)};
+        if (AppConfig.isQtalk()) {
+
+
+            if (Platform.OS == 'android') {
+                // containerStyle = {height: (height - 105 - StatusBar.currentHeight)};
+            }
         }
+
         return (
 
             <View style={[{backgroundColor: 'white', justifyContent: 'center'}, containerStyle]}>
@@ -1076,10 +1105,8 @@ export default class TravelCalendar extends Component {
                     alignSelf: 'flex-end',
                     // paddingTop: 120,
                     // right: 15,
-                    bottom:18,
-                    right:22,
-
-
+                    bottom: (Platform.OS === 'ios') ? 100 : 18,
+                    right: 22,
                 }}>
 
 
@@ -1093,9 +1120,9 @@ export default class TravelCalendar extends Component {
                         this.addTrip();
                     }}>
                         <Image source={require('../images/add_calendar.png')}
-                               style={{height: 48, width: 48,borderRadius: 25,  }}/>
+                               style={{height: 48, width: 48, borderRadius: 25,}}/>
                         {/*<Text style={{fontSize: 16, textAlign: 'center', color: 'white'}}>*/}
-                            {/*+*/}
+                        {/*+*/}
                         {/*</Text>*/}
                     </TouchableOpacity>
                     {/*<View style={{height: 1, backgroundColor: '#d3d3d3', marginLeft: 10, marginRight: 10}}></View>*/}
@@ -1152,10 +1179,10 @@ const styles = StyleSheet.create({
     marginBottom18: {
         marginBottom: 18
     },
-    itemText:{
-        marginLeft:5,
-        fontSize:12,
-        color:'#ffffff',
+    itemText: {
+        marginLeft: 5,
+        fontSize: 12,
+        color: '#ffffff',
     }
 
 });

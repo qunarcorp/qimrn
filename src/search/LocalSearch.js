@@ -13,9 +13,8 @@ import {
 } from 'react-native';
 import NavCBtn from './../common/NavCBtn';
 import SplitMessage from './../search/SpiltMessage'
-import {
-    QSearch,
-} from 'react-native-qunar-component-library-public';
+import { QSearch,} from 'react-native-qunar-component-library-public';
+import AppConfig from "../common/AppConfig";
 
 export default class LocalSearch extends Component {
     static navigationOptions = ({navigation}) => {
@@ -145,52 +144,54 @@ export default class LocalSearch extends Component {
 
 
     showAppointView() {
-        if (!this.state.isAppointSearch) {
-            return <View style={styles.appointSearch}>
-                <Text style={{fontSize: 14, color: '#9e9e9e', marginTop: 36,}}>快速搜索聊天内容</Text>
-                <View style={styles.appointSearchItem}>
-                    <TouchableOpacity onPress={() => {
-                        this.searchImage();
-                    }}>
-                        <View style={styles.searhItemView}>
-                            <Text style={styles.iconStyle}>{String.fromCharCode(parseInt("0xf252;"))}</Text>
-                            <Text style={styles.searchItemText}>图片与视频</Text>
-                        </View>
+        if(AppConfig.showLocalQuickSearch()){
+            if (!this.state.isAppointSearch) {
+                return <View style={styles.appointSearch}>
+                    <Text style={{fontSize: 14, color: '#9e9e9e', marginTop: 36,}}>快速搜索聊天内容</Text>
+                    <View style={styles.appointSearchItem}>
+                        <TouchableOpacity onPress={() => {
+                            this.searchImage();
+                        }}>
+                            <View style={styles.searhItemView}>
+                                <Text style={styles.iconStyle}>{String.fromCharCode(parseInt("0xf252;"))}</Text>
+                                <Text style={styles.searchItemText}>图片与视频</Text>
+                            </View>
 
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => {
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => {
 
-                        this.searchFile();
-                    }}>
-                        <View style={styles.searhItemView}>
-                            <Text style={styles.iconStyle}>{String.fromCharCode(parseInt("0xe211;"))}</Text>
-                            <Text style={styles.searchItemText}>文件</Text>
-                        </View>
+                            this.searchFile();
+                        }}>
+                            <View style={styles.searhItemView}>
+                                <Text style={styles.iconStyle}>{String.fromCharCode(parseInt("0xe211;"))}</Text>
+                                <Text style={styles.searchItemText}>文件</Text>
+                            </View>
 
 
-                    </TouchableOpacity>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => {
-                        this.searchLink();
-                    }}>
+                        <TouchableOpacity onPress={() => {
+                            this.searchLink();
+                        }}>
 
-                        <View style={styles.searhItemView}>
-                            <Text style={styles.iconStyle}>{String.fromCharCode(parseInt("0xf4e9;"))}</Text>
-                            <Text style={styles.searchItemText}>链接</Text>
-                        </View>
-                    </TouchableOpacity>
+                            <View style={styles.searhItemView}>
+                                <Text style={styles.iconStyle}>{String.fromCharCode(parseInt("0xf4e9;"))}</Text>
+                                <Text style={styles.searchItemText}>链接</Text>
+                            </View>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => {
-                        this.searchDate();
-                    }}>
+                        <TouchableOpacity onPress={() => {
+                            this.searchDate();
+                        }}>
 
-                        <View style={styles.searhItemView}>
-                            <Text style={styles.iconStyle}>{String.fromCharCode(parseInt("0xf14c;"))}</Text>
-                            <Text style={styles.searchItemText}>日期</Text>
-                        </View>
-                    </TouchableOpacity>
+                            <View style={styles.searhItemView}>
+                                <Text style={styles.iconStyle}>{String.fromCharCode(parseInt("0xf14c;"))}</Text>
+                                <Text style={styles.searchItemText}>日期</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
+            }
         }
     }
 
@@ -200,6 +201,7 @@ export default class LocalSearch extends Component {
         return <Text
             style={{
                 height: 24,
+                paddingTop: 6,
                 paddingLeft: 16,
                 alignItems: 'center',
                 backgroundColor: '#f9f9f9',
@@ -495,7 +497,7 @@ var styles = StyleSheet.create({
         marginRight: 5,
     },
     renderItemTextRight: {
-        color: '#1E90FF',
+        color: '#9E9E9E',
         fontSize: 12,
     },
     rightArrow: {

@@ -22,6 +22,7 @@ import checkVersion from "./../conf/AutoUpdateRNBundle";
 import ServiceState from "./ServiceState";
 import NotificationSetting from './NotificationSetting'
 import PrivacySetting from './PrivacySetting'
+import AlertVoiceSetting from "./AlertVoiceSetting";
 
 export default class App extends Component {
     constructor(props) {
@@ -73,7 +74,10 @@ export default class App extends Component {
             },
             'PrivacySetting':{
                 screen:PrivacySetting
-            }
+            },
+            'AlertVoiceSetting':{
+                screen:AlertVoiceSetting
+            },
         }, {
             mode:'card',
             headerMode:'screen',

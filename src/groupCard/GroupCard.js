@@ -57,6 +57,16 @@ class MyListItem extends PureComponent {
 
     }
 
+    kickGroupMember(){
+        if (this.props.navigation.state.params.groupId === '' || this.props.navigation.state.params.groupId === null) {
+            return;
+        }
+        this.props.navigation.navigate('GroupMemberKick', {
+            'GroupId': this.props.navigation.state.params.groupId,
+            'Permissions': this.props.navigation.state.params.permissions,
+        });
+    }
+
     renderItem(item, index) {
         // console.log("MemberItem ============");
         // console.log(item);
@@ -77,11 +87,25 @@ class MyListItem extends PureComponent {
                     <Text style={styles.memberName}></Text>
                 </View>
             );
+        } else if (item == "KICK"){
+            return (
+                <View key={this.props.groupId + index} style={{
+                    width: 46 + this.cap,
+                    height: 80,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingTop: 10
+                }}>
+                    <TouchableOpacity style={styles.addMemberBtn} onPress={() => {
+                        this.kickGroupMember();
+                    }}>
+                        <Image source={require('../images/atom_ui_kick_member.png')} style={styles.addMemberIcon}/>
+                    </TouchableOpacity>
+                    <Text style={styles.memberName}></Text>
+                </View>
+            );
         } else {
             let headerUri = item["headerUri"];
-            if (headerUri == null || headerUri == '') {
-                headerUri = 'https://qt.qunar.com/file/v2/download/perm/3ca05f2d92f6c0034ac9aee14d341fc7.png';
-            }
             let name = item["name"];
             let xmppJid = item["xmppjid"];
             return (
@@ -92,13 +116,30 @@ class MyListItem extends PureComponent {
                     alignItems: "center",
                     paddingTop: 10
                 }}>
-                    <TouchableOpacity style={styles.memberHeaderBtn} onPress={() => {
-                        this.openUserCard(xmppJid);
-                    }}>
-                        <Image source={{uri: headerUri}} style={styles.memberHeader}/>
-                    </TouchableOpacity>
+                    {this.getHeaderImage(headerUri,xmppJid)}
+
                     <Text numberOfLines={1} style={styles.memberName}>{name}</Text>
                 </View>
+            );
+        }
+    }
+
+    getHeaderImage(headerUri,xmppJid){
+        if (headerUri == null || headerUri == '') {
+            return (
+                <TouchableOpacity style={styles.memberHeaderBtn} onPress={() => {
+                    this.openUserCard(xmppJid);
+                }}>
+                    <Image source={require('../images/single_chat_icon.png')} style={styles.memberHeader}/>
+                </TouchableOpacity>
+            );
+        }else {
+            return (
+                <TouchableOpacity style={styles.memberHeaderBtn} onPress={() => {
+                    this.openUserCard(xmppJid);
+                }}>
+                    <Image source= {{uri: headerUri}} style={styles.memberHeader}/>
+                </TouchableOpacity>
             );
         }
     }
@@ -112,7 +153,7 @@ class MyListItem extends PureComponent {
     render() {
         return (
             <View style={{flexDirection: "row", paddingLeft: this.cap / 2.0}}>
-                {this.renderList(this.state.groupMembers)}
+                {this.renderList(this.props.groupMembers)}
             </View>
         );
     }
@@ -141,6 +182,7 @@ export default class GroupCard extends Component {
             stickyState: false,
             permissions: this.props.navigation.state.params.permissions,
             showRed:false,
+            groupInfo:{},
         };
         this.unMount = false;
     }
@@ -159,13 +201,25 @@ export default class GroupCard extends Component {
                 membersTemp.push(groupMembers[index]);
             }
         }
-        if (membersTemp.length < 5) {
-            membersTemp.push("ADD");
+        if(this.state.permissions == 0 || this.state.permissions == 1){
+            if (membersTemp.length < 4) {
+                membersTemp.push("ADD");
+                membersTemp.push("KICK");
+            } else if (membersTemp.length < 5) {
+                membersTemp.push("ADD");
+                memberList.push({"key": "" + key, "list": ["KICK"]});
+            } else {
+                memberList.push({"key": "" + key, "list": ["ADD","KICK"]});
+            }
         } else {
-            memberList.push({"key": "" + key, "list": ["ADD"]});
+            if (membersTemp.length < 5) {
+                membersTemp.push("ADD");
+            } else {
+                memberList.push({"key": "" + key, "list": ["ADD"]});
+            }
         }
+        key = 1;
         this.setState({
-            // groupInfo: groupInfo,
             groupMembers: memberList,
             memberList: groupMembers,
         });
@@ -215,26 +269,52 @@ export default class GroupCard extends Component {
         this.groupTopicChange = DeviceEventEmitter.addListener('updateGroupTopic', function (params) {
             this.updateGroupTopic(params);
         }.bind(this));
-        this.updateGroupInfo();
         this.exit = DeviceEventEmitter.addListener('Del_Destory_Muc', function (params) {
-            this.closeActivity(params);
+            this.updateGroupMemberByKick(params);
         }.bind(this));
 
+
+        this.removeSession = DeviceEventEmitter.addListener('Remove_Session', function (params) {
+            this.closeActivity(params);
+        }.bind(this));
         this.refreshNick = DeviceEventEmitter.addListener('updateNick', function (params) {
             this.updateGetGroupMember();
         }.bind(this));
         this.refreshGroupMemeber = DeviceEventEmitter.addListener('updateGroupMember', function (params) {
             let groupId = params['GroupId'];
+            let per = params['permissions'];
             if (groupId === this.state.groupId) {
+                this.setState({permissions: per});
                 this.getGroupMember(params);
             }
         }.bind(this));
-        NativeModules.QimRNBModule.showRedView(function (response) {
-            this.setState({
-                    showRed:response.show,
-                }
-            )
-        }.bind(this))
+
+        this.updateGroupInfo();
+
+        //此处是提醒红点功能
+        // NativeModules.QimRNBModule.showRedView(function (response) {
+        //     this.setState({
+        //             showRed:response.show,
+        //         }
+        //     )
+        // }.bind(this))
+    }
+
+    updateGroupMemberByKick(params){
+
+        let groupId = params["groupId"];
+        let moduleName = "GroupCard";
+        if (groupId == this.state.groupId) {
+            // //关闭activi
+            // if (Platform.OS === 'ios') {
+            //     AppConfig.exitApp(moduleName);
+            // } else {
+            //     BackHandler.exitApp();
+            // }
+            this.updateGetGroupMember();
+        }
+
+
     }
 
     closeActivity(params) {
@@ -350,6 +430,7 @@ export default class GroupCard extends Component {
         this.props.navigation.navigate('GroupMembers', {
             'groupId': this.state.groupInfo["GroupId"],
             "groupMembers": this.state.memberList,
+            "affiliation":this.state.permissions,
         });
     }
 
@@ -405,11 +486,12 @@ export default class GroupCard extends Component {
     }
 
     componentWillUnmount() {
-        key = null;
+        key = 1;
         this.unMount = false;
         this.groupNameChange.remove();
         this.groupTopicChange.remove();
         this.exit.remove();
+        this.removeSession.remove();
         if (this.refreshNick) {
             this.refreshNick.remove();
         }
@@ -553,6 +635,22 @@ export default class GroupCard extends Component {
 
     }
 
+    showQRCode(){
+        if(AppConfig.showGroupQRCode()){
+            return(
+                <View>
+                    <TouchableOpacity style={styles.cellContentView} onPress={this.openGroupQRCode.bind(this)}>
+                        <Text style={styles.cellTitle}>群二维码</Text>
+                        <View style={styles.cellQRCode}>
+                            <Image source={require('../images/qrcode.png')} style={styles.qrCodeIcon}/>
+                        </View>
+                        <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
+                    </TouchableOpacity>
+                </View>
+            );
+        }
+    }
+
     render() {
         // console.log(this.state.groupInfo);
         let groupName = "";
@@ -567,7 +665,7 @@ export default class GroupCard extends Component {
                     <View style={styles.groupMembers}>
                         <FlatList
                             data={this.state.groupMembers}
-                            extraData={this.state}
+                            // extraData={this.state}
                             keyExtractor={this._keyExtractor}
                             renderItem={this._renderItem}
                         />
@@ -585,13 +683,9 @@ export default class GroupCard extends Component {
                             <Text style={styles.cellValue} selectable={true}>{groupName}</Text>
                             <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.cellContentView} onPress={this.openGroupQRCode.bind(this)}>
-                            <Text style={styles.cellTitle}>群二维码</Text>
-                            <View style={styles.cellQRCode}>
-                                <Image source={require('../images/qrcode.png')} style={styles.qrCodeIcon}/>
-                            </View>
-                            <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
-                        </TouchableOpacity>
+
+                        {this.showQRCode()}
+
                         {/*<View style={styles.cellGroupTopic}>*/}
                         <TouchableOpacity style={styles.cellContentView}
                                           onPress={this.openGroupTopicSetting.bind(this)}>
@@ -731,7 +825,8 @@ var styles = StyleSheet.create({
         flex: 1,
     },
     cellTitle: {
-        width: 100,
+        width: 150,
+        fontSize: 14,
         color: "#333333",
     },
     cellValue: {

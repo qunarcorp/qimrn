@@ -9,7 +9,7 @@ import {
 
 const VERSION_INFO = [{
     'ios': {
-        version: '0.4.10',
+        version: '0.4.12',
     },
     'android': {
         version: '0.0.8',

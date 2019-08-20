@@ -14,6 +14,7 @@ import {TripRoomSelect} from './TripRoomSelect';
 import {TripAttendeesSelect} from './TripAttendeesSelect';
 import {TripTypeSelect} from './TripTypeSelect';
 import {TripAreaSelect} from "./TripAreaSelect";
+import {TripCitySelect} from "./TripCitySelect";
 
 import {StackNavigator, NavigationActions} from 'react-navigation';
 import CardStackStyleInterpolator from 'react-navigation/src/views/CardStack/CardStackStyleInterpolator';
@@ -58,7 +59,10 @@ export default class App extends Component {
             },
             'TripAreaSelect':{
                 screen:TripAreaSelect,
-            }
+            },
+            'TripCitySelect':{
+                screen:TripCitySelect,
+            },
 
 
         }, {

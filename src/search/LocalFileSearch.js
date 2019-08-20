@@ -202,6 +202,7 @@ export class LocalFileSearch extends Component {
         return <Text
             style={{
                 height: 24,
+                paddingTop: 6,
                 paddingLeft: 16,
                 alignItems: 'center',
                 backgroundColor: '#f9f9f9',

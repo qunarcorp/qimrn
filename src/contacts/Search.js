@@ -9,7 +9,7 @@ import {
     FlatList,
     Image,
     Picker,
-    TouchableOpacity, Alert,
+    TouchableOpacity, Alert, DeviceEventEmitter, NativeModules,
 } from 'react-native';
 import NavCBtn from './../common/NavCBtn'
 import HttpTools from './../common/HttpTools';
@@ -55,12 +55,9 @@ export default class Search extends Component {
     }
 
     _getDomainList(){
-        let data = {
-            version: 0,
-        };
-        HttpTools.postJson(this.state.url,JSON.stringify(data)).then(function (response) {
+        NativeModules.QimRNBModule.getDomainList(function (response) {
             if (response.ret) {
-                let jsonData = response.data.domains;
+                let jsonData = response.domains;
                 this.setState({
                     domainDatas:jsonData,
                     domainSelectValue:jsonData[0].name,
@@ -70,9 +67,28 @@ export default class Search extends Component {
             } else {
                 Alert.alert("提示","请求数据失败：" + response.errmsg);
             }
-        }.bind(this), function (error) {
-            Alert.alert("提示","请求数据失败：" + error);
-        });
+        }.bind(this));
+        // let formData = new FormData();
+        // formData.append("version",0);
+        //
+        // var headers = new Headers();
+        // headers.append("Cookie", "q_ckey=" + AppConfig._ckey);
+        //
+        // HttpTools.postJson(this.state.url,formData,headers).then(function (response) {
+        //     if (response.ret) {
+        //         let jsonData = response.data.domains;
+        //         this.setState({
+        //             domainDatas:jsonData,
+        //             domainSelectValue:jsonData[0].name,
+        //             domainDescription:jsonData[0].description,
+        //         });
+        //         this.domainDatas = jsonData;
+        //     } else {
+        //         Alert.alert("提示","请求数据失败：" + response.errmsg);
+        //     }
+        // }.bind(this), function (error) {
+        //     Alert.alert("提示","请求数据失败：" + error);
+        // });
     }
 
     _searchChangeText(text) {
@@ -85,32 +101,50 @@ export default class Search extends Component {
         if(this.searchStr === null || this.searchStr === '' ){
             return;
         }
-        let data = {
-            ckey : AppConfig._ckey,
-            id : this.id,
-            key : this.searchStr,
-            offset : this.state.offset,
-            limit : 20,
-        };
-        HttpTools.postJson(this.url,JSON.stringify(data)).then(function (response) {
+        NativeModules.QimRNBModule.searchDomainUser(this.url,this.id,this.searchStr,this.state.offset,20,function (response) {
             if (response.ret) {
-                this.tempData = response.data.users;
-                if(this.state.searchData.length == 0){
-                    this.userDatas = this.tempData;
-                }else {
-                    for(var i = 0;i<this.tempData.length;i++){
-                        this.userDatas.push(this.tempData[i]);
-                    }
-                }
-                this.setState({
-                    searchData:this.userDatas,
-                });
+                this.tempData = response.users;
+                        if(this.state.searchData.length == 0){
+                            this.userDatas = this.tempData;
+                        }else {
+                            for(var i = 0;i<this.tempData.length;i++){
+                                this.userDatas.push(this.tempData[i]);
+                            }
+                        }
+                        this.setState({
+                            searchData:this.userDatas,
+                        });
             } else {
                 Alert.alert("提示","请求数据失败：" + response.errmsg);
             }
-        }.bind(this), function (error) {
-            Alert.alert("提示","请求数据失败：" + error);
-        });
+        }.bind(this));
+        // let formData = new FormData();
+        // formData.append("id",this.id);
+        // formData.append("key",this.searchStr);
+        // formData.append("offset",this.state.offset);
+        // formData.append("limit",20);
+        // let headers = {
+        //     q_ckey : AppConfig._ckey,
+        // }
+        // HttpTools.postJson(this.url,formData,headers).then(function (response) {
+        //     if (response.ret) {
+        //         this.tempData = response.data.users;
+        //         if(this.state.searchData.length == 0){
+        //             this.userDatas = this.tempData;
+        //         }else {
+        //             for(var i = 0;i<this.tempData.length;i++){
+        //                 this.userDatas.push(this.tempData[i]);
+        //             }
+        //         }
+        //         this.setState({
+        //             searchData:this.userDatas,
+        //         });
+        //     } else {
+        //         Alert.alert("提示","请求数据失败：" + response.errmsg);
+        //     }
+        // }.bind(this), function (error) {
+        //     Alert.alert("提示","请求数据失败：" + error);
+        // });
     }
 
     _onloadMore(){

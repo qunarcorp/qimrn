@@ -137,6 +137,7 @@ export class LocalLinkSearch extends Component {
             style={{
                 height: 24,
                 paddingLeft: 16,
+                paddingTop: 6,
                 alignItems: 'center',
                 backgroundColor: '#f9f9f9',
                 color: '#9e9e9e',

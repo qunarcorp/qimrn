@@ -46,7 +46,7 @@ export default class BlackContacts extends Component{
 
     componentWillUnmount() {
         // this.reloadData.remove();
-        DeviceEventEmitter.removeAllListeners();
+        // DeviceEventEmitter.removeAllListeners();
     }
 
     selectBlackContacts(){

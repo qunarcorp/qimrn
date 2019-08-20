@@ -10,6 +10,7 @@ import {
 import GroupCard from './GroupCard';
 import GroupMembers from './GroupMembers';
 import GroupMemberAdd from './GroupMemberAdd';
+import GroupMemberKick from './GroupMemberKick';
 import GroupNameSetting from './GroupNameSetting';
 import GroupTopicSetting from './GroupTopicSetting';
 import GroupQRCode from './GroupQRCode';
@@ -46,6 +47,10 @@ export default class App extends Component {
             //增加群成员
             'GroupMemberAdd':{
                 screen:GroupMemberAdd,
+            },
+            //增加群成员
+            'GroupMemberKick':{
+                screen:GroupMemberKick,
             },
             // 群名设置
             'GroupNameSetting':{

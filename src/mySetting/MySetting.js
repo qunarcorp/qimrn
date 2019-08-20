@@ -10,18 +10,20 @@ import {
     Platform,
     NativeAppEventEmitter,
     DeviceEventEmitter,
+    ImageBackground,
     Dimensions,
     StatusBar,
 } from 'react-native';
 import ScreenUtils from './../common/ScreenUtils';
 import AppConfig from "../common/AppConfig";
+import {DimensionsUtil} from "../common/DimensionsUtil";
 import LoadingView from "../common/LoadingView";
 import RNRestart from 'react-native-restart';
 
 import checkVersion from "./../conf/CheckUpdate";
 
-const {height, width} = Dimensions.get('window');
-
+const {height, width} = DimensionsUtil.getSize();
+// const {height, width} = Dimensions.get('window');
 export default class UserCard extends Component {
 
     static navigationOptions = ({navigation}) => {
@@ -32,17 +34,19 @@ export default class UserCard extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            userInfo: {},
+        };
         this.unMount = false;
     }
 
     componentDidMount() {
-       this.init();
+        this.init();
         this.willShow = DeviceEventEmitter.addListener(
             'QIM_RN_Will_Show',
-           function (params) {
-               this.init();
-           }.bind(this)
+            function (params) {
+                this.init();
+            }.bind(this)
         );
         this.imageUpdateEndAttribute = DeviceEventEmitter.addListener('imageUpdateEnd', function (params) {
             this.imageUpdateEnd(params);
@@ -52,15 +56,18 @@ export default class UserCard extends Component {
         }.bind(this));
     }
 
-    init(){
+    init() {
         NativeModules.QimRNBModule.getMyInfo(function (responce) {
             let userInfo = responce.MyInfo;
             this.setState({userInfo: userInfo});
+            this.setState({userMood: userInfo["Mood"]});
             // RNRestart.Restart();
         }.bind(this));
-        NativeModules.QimRNBModule.getMyMood(function(responce){
-            let mood = responce.mood;
-            this.setState({userMood:mood});
+        NativeModules.QimRNBModule.getMyMood(function (responce) {
+            if (responce) {
+                let mood = responce.mood;
+                this.setState({userMood: mood});
+            }
         }.bind(this));
     }
 
@@ -82,6 +89,7 @@ export default class UserCard extends Component {
             this.setState({userMood: pSignature});
         }
     }
+
     //结束显示
     imageUpdateEnd(params) {
         if (params.ok) {
@@ -89,7 +97,7 @@ export default class UserCard extends Component {
             this.state.userInfo["HeaderUri"] = headerUrl;
             this.setState({userInfo: this.state.userInfo});
 
-        }else{
+        } else {
             // Alert.alert('提示','更新失败');
         }
         // LoadingView.hidden();
@@ -153,6 +161,23 @@ export default class UserCard extends Component {
         NativeModules.QimRNBModule.openNativePage(params);
     }
 
+    //打开管理后台
+    openToCManager(){
+        let params = {};
+        params["NativeName"] = "OpenToCManager";
+        NativeModules.QimRNBModule.openNativePage(params);
+    }
+
+    //打开我的朋友圈
+    openUserWorkWorld() {
+        let param = {};
+        if (this.state.userInfo["UserId"] === '' || this.state.userInfo["UserId"] === null) {
+            return
+        }
+        param["UserId"] = this.state.userInfo["UserId"];
+        NativeModules.QimRNBModule.openUserWorkWorld(param);
+    }
+
     //打开反馈
     openAdviceAndFeedback() {
         // if (Platform.OS === 'ios') {
@@ -169,26 +194,77 @@ export default class UserCard extends Component {
         // }
     }
 
-    _renderFileCell() {
-        // if (Platform.OS == 'ios') {
+    _renderWorkWorld() {
+        if (AppConfig.isShowWorkWorld()) {
             return (
                 <View>
                     <View>
                         <TouchableOpacity style={styles.cellContentView} onPress={() => {
-                            this.openMyFiles();
+                            this.openUserWorkWorld();
                         }}>
                             <Text style={styles.cellIcon}>{String.fromCharCode(0xe213)}</Text>
-                            <Text style={styles.cellTitle}>我的文件</Text>
+                            <Text style={styles.cellTitle}>我的驼圈</Text>
                             <Text style={styles.cellValue}></Text>
-                            <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
+                            {/*<Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>*/}
+                            <Text style={[styles.rightArrow, {color: '#C4C4C5'}]}>{String.fromCharCode(0xe7e0)}</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.line}/>
                 </View>
             );
-        // } else {
-        //
-        // }
+        }
+    }
+
+    _renderRedPackage() {
+        if (AppConfig.isShowRedPackage()) {
+            return (
+                <View>
+                    {/*<View style={styles.line}/>*/}
+                    <View style={styles.walletInfo}>
+                        <TouchableOpacity style={styles.cellContentView} onPress={() => {
+                            this.openMyRedBag();
+                        }}>
+                            <Text style={[styles.cellIcon, {color: '#e88270'}]}>{String.fromCharCode(0xe741)}</Text>
+                            <Text style={styles.cellTitle}>我的红包</Text>
+                            <Text style={styles.cellValue}></Text>
+                            {/*<Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>*/}
+                            <Text style={[styles.rightArrow, {color: '#C4C4C5'}]}>{String.fromCharCode(0xe7e0)}</Text>
+                        </TouchableOpacity>
+                        {this.showLins()}
+                        <TouchableOpacity style={styles.cellContentView} onPress={() => {
+                            this.openBalanceInquiry();
+                        }}>
+                            <Text style={[styles.cellIcon, {color: '#F4B56B'}]}>{String.fromCharCode(0xe743)}</Text>
+                            <Text style={styles.cellTitle}>我的余额</Text>
+                            <Text style={styles.cellValue}></Text>
+                            {/*<Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>*/}
+                            <Text style={[styles.rightArrow, {color: '#C4C4C5'}]}>{String.fromCharCode(0xe7e0)}</Text>
+                        </TouchableOpacity>
+                        {this.showLins()}
+
+                    </View>
+                </View>
+            );
+        }
+    }
+
+    _renderFileCell() {
+        return (
+            <View>
+                <View>
+                    <TouchableOpacity style={styles.cellContentView} onPress={() => {
+                        this.openMyFiles();
+                    }}>
+                        <Text style={[styles.cellIcon, {color: '#67B576'}]}>{String.fromCharCode(0xe742)}</Text>
+                        <Text style={styles.cellTitle}>我的文件</Text>
+                        <Text style={styles.cellValue}></Text>
+                        {/*<Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>*/}
+                        <Text style={[styles.rightArrow, {color: '#C4C4C5'}]}>{String.fromCharCode(0xe7e0)}</Text>
+                    </TouchableOpacity>
+                </View>
+                {this.showLins()}
+            </View>
+        );
     }
 
     _showAccountInfo() {
@@ -202,7 +278,8 @@ export default class UserCard extends Component {
                             <Text style={styles.cellIcon}>{String.fromCharCode(0xf0e2)}</Text>
                             <Text style={styles.cellTitle}>账号信息</Text>
                             <Text style={styles.cellValue}></Text>
-                            <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
+                            {/*<Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>*/}
+                            <Text style={[styles.rightArrow, {color: '#C4C4C5'}]}>{String.fromCharCode(0xe7e0)}</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.line}>
@@ -213,16 +290,202 @@ export default class UserCard extends Component {
         }
     }
 
+    _showToCManager(){
+        if(AppConfig.isToCManager()){
+            return(
+                <View>
+                    <View>
+                        <TouchableOpacity style={styles.cellContentView} onPress={() => {
+                            this.openToCManager();
+                        }}>
+                            <Text style={[styles.cellIcon, {color: '#F4B56B'}]}>{String.fromCharCode(0xe894)}</Text>
+                            <Text style={styles.cellTitle}>管理后台</Text>
+                            <Text style={styles.cellValue}></Text>
+                            <Text style={[styles.rightArrow, {color: '#C4C4C5'}]}>{String.fromCharCode(0xe7e0)}</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {this.showLins()}
+                </View>
+            );
+        }
+    }
+
+
+    _showPersonalCard2(headerUri, nickName, mood, Department) {
+
+        let  req;
+        let iosr = require('../images/back_shadow_ios.png');
+        let andr = require('../images/back_shadow.png');
+
+        let qr;
+        let iosqr = require('../images/qrcode_ios.png');
+        let andqr = require('../images/qrcode.png');
+        if(Platform.OS == 'ios'){
+            req = iosr
+            qr = iosqr
+        }else{
+            req = andr
+            qr = andqr
+        }
+
+        return (
+            <View>
+                <ImageBackground style={styles.backHeaderup}
+                                 source={req}
+                    //enum('cover', 'contain', 'stretch', 'repeat', 'center')
+                    //resizeMode="contain"
+                >
+                    <View style={styles.userHeader2}>
+                        <TouchableOpacity style={{backgroundColor: '#00000000', flex: 115, flexDirection: 'row'}}
+                                          onPress={() => {
+                                              this.openPersonalData();
+                                          }}
+                        >
+                            <View style={{
+                                backgroundColor: '#00000000',
+                                flex: 232,
+                                flexDirection: 'column',
+                            }}>
+
+                                <View style={{
+                                    backgroundColor: '#00000000', flex: 75, flexDirection: 'row',
+                                    marginTop: ScreenUtils.scaleSize(25)
+                                }}>
+                                    <Text style={{
+                                        marginLeft: ScreenUtils.scaleSize(19),
+                                        color: '#3B424F',
+                                        fontSize: ScreenUtils.setSpText(21),
+                                        fontWeight: 'bold',
+                                    }}>{nickName}</Text>
+                                </View>
+                                <View style={{backgroundColor: '#00000000', flex: 138}}>
+                                    <Text
+                                        style={{
+                                            marginLeft: ScreenUtils.scaleSize(19),
+                                            color: '#999999',
+                                            fontSize: ScreenUtils.setSpText(13),
+                                            lineHeight: 18,
+                                        }}
+                                        numberOfLines={2} ellipsizeMode={'tail'}
+                                    >{mood}</Text>
+                                </View>
+                            </View>
+                            <View style={{
+                                backgroundColor: '#00000000',
+                                flex: 114,
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                <Image source={{uri: headerUri}} style={styles.userHeaderImage2}/>
+                            </View>
+                        </TouchableOpacity>
+                        <View style={{backgroundColor:Platform.OS=='ios'?'#f5f5f5':'#eeeeee', height:Platform.OS=='ios'?1:0.7}}/>
+                        <TouchableOpacity
+                            style={{
+                                backgroundColor: '#00000000',
+                                flex: 41,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                            }}
+
+                            onPress={() => {
+                                this.openUserQRCode();
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    marginLeft: ScreenUtils.scaleSize(19),
+                                    fontSize: ScreenUtils.setSpText(14),
+                                    color: '#bfbfbf',
+                                }}
+                            >二维码名片</Text>
+                            <View style={{flexDirection: 'row', alignItems: 'center', marginRight: ScreenUtils.scaleSize(6)}}>
+                                <Image source={qr} style={styles.qrCodeIcon}/>
+                                <Text style={[styles.rightArrow, {color: '#C4C4C5',marginRight:ScreenUtils.scaleSize(10)}]}>{String.fromCharCode(0xe7e0)}</Text>
+                                {/*<Image source={require('../images/arrow_right.png')} style={styles.rightArrow2}/>*/}
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </ImageBackground>
+
+            </View>
+
+        )
+    }
+
+
+    openUserQRCode() {
+        if (this.state.userInfo["UserId"] === '' || this.state.userInfo["UserId"] === null) {
+            return;
+        }
+        // this.props.navigation.navigate('UserQRCode', {
+        //     'backTitle': "个人资料",
+        //     'userId': this.state.userInfo["UserId"],
+        //     'userName': this.state.userInfo["Name"],
+        //     'userHeader': this.state.userInfo["HeaderUri"],
+        // });
+
+
+        let params = {};
+        params["Bundle"] = "clock_in.ios";
+        params["Module"] = "MySetting";
+        params["Properties"] = {};
+        params["Properties"]["Screen"] = "UserQRCode";
+        params["Properties"]["userId"] = this.state.userInfo["UserId"];
+        params["Properties"]["userName"] = this.state.userInfo["Name"];
+        params["Properties"]["userHeader"] = this.state.userInfo["HeaderUri"];
+        params["Version"] = "1.0.0";
+        NativeModules.QimRNBModule.openRNPage(params, function () {
+
+        });
+        // } else {
+        // }
+
+
+
+    }
+
+    showLins() {
+        return (<View style={{
+            height: Platform.OS=='ios'?1:0.7,
+            marginLeft: ScreenUtils.scaleSize(25),
+            backgroundColor: Platform.OS=='ios'?"#f5f5f5":"#eeeeee",
+        }}/>)
+    }
+
+    _showPersonalCard(headerUri, nickName, mood) {
+        return (
+            <TouchableOpacity style={styles.userHeader} onPress={() => {
+                this.openPersonalData();
+            }}>
+                <Image source={{uri: headerUri}} style={styles.userHeaderImage}/>
+                <View style={styles.userNameInfo}>
+                    <Text style={styles.userName}>{nickName}</Text>
+                    <Text style={styles.userMood} numberOfLines={1}>{mood}</Text>
+                </View>
+                <View style={styles.cellQRCode}>
+                    <Image source={require('../images/qrcode.png')} style={styles.qrCodeIcon}/>
+                </View>
+                <Text style={[styles.rightArrow, {color: '#C4C4C5'}]}>{String.fromCharCode(0xe7e0)}</Text>
+
+                {/*<Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>*/}
+            </TouchableOpacity>
+        )
+    }
+
     render() {
         let nickName = "";
         let mood = "这家伙很懒什么都没留"; //'/Users/admin/Documents/big_image.gif'
         let headerUri = "../images/singleHeaderDefault.png";
+        let Department = "未知";
         if (this.state.userInfo) {
             nickName = this.state.userInfo["Name"];
             headerUri = this.state.userInfo["HeaderUri"];
+            Department = this.state.userInfo["Department"];
             // mood = this.state.userInfo["Mood"];
         }
-        if(this.state.userMood){
+        if (this.state.userMood) {
             mood = this.state.userMood
         }
         let containerStyle = {flex: 1};
@@ -230,43 +493,13 @@ export default class UserCard extends Component {
             containerStyle = {height: (height - 105 - StatusBar.currentHeight)};
         }
         return (
-            <View style={[styles.wrapper,containerStyle]}>
+            <View style={[styles.wrapper, containerStyle]}>
                 <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
-                    <TouchableOpacity style={styles.userHeader} onPress={() => {
-                        this.openPersonalData();
-                    }}>
-                        <Image source={{uri: headerUri}} style={styles.userHeaderImage}/>
-                        <View style={styles.userNameInfo}>
-                            <Text style={styles.userName}>{nickName}</Text>
-                            <Text style={styles.userMood} numberOfLines={1}>{mood}</Text>
-                        </View>
-                        <View style={styles.cellQRCode}>
-                            <Image source={require('../images/qrcode.png')} style={styles.qrCodeIcon}/>
-                        </View>
-                        <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
-                    </TouchableOpacity>
-                    <View style={styles.line}/>
-                    <View style={styles.walletInfo}>
-                        <TouchableOpacity style={styles.cellContentView} onPress={() => {
-                            this.openMyRedBag();
-                        }}>
-                            <Text style={styles.cellIcon}>{String.fromCharCode(0xf0e4)}</Text>
-                            <Text style={styles.cellTitle}>我的红包</Text>
-                            <Text style={styles.cellValue}></Text>
-                            <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.cellContentView} onPress={() => {
-                            this.openBalanceInquiry();
-                        }}>
-                            <Text style={styles.cellIcon}>{String.fromCharCode(0xf0f1)}</Text>
-                            <Text style={styles.cellTitle}>余额查询</Text>
-                            <Text style={styles.cellValue}></Text>
-                            <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.line}>
+                    {this._showPersonalCard2(headerUri, nickName, mood, Department)}
+                    {/*<View style={styles.line}>*/}
 
-                    </View>
+                    {/*</View>*/}
+                    {this._renderRedPackage()}
 
                     {/*{this._showAccountInfo()}*/}
                     {this._renderFileCell()}
@@ -274,20 +507,24 @@ export default class UserCard extends Component {
                         <TouchableOpacity style={styles.cellContentView} onPress={() => {
                             this.openAdviceAndFeedback();
                         }}>
-                            <Text style={styles.cellIcon}>{String.fromCharCode(0xf0ef)}</Text>
-                            <Text style={styles.cellTitle}>建议反馈</Text>
+                            <Text style={[styles.cellIcon, {color: '#839DDB'}]}>{String.fromCharCode(0xe744)}</Text>
+                            <Text style={styles.cellTitle}>意见反馈</Text>
                             <Text style={styles.cellValue}></Text>
-                            <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
+                            <Text style={[styles.rightArrow, {color: '#C4C4C5'}]}>{String.fromCharCode(0xe7e0)}</Text>
+                            {/*<Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>*/}
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.cellContentView} onPress={() => {
-                            this.openSetting();
-                        }}>
-                            <Text style={styles.cellIcon}>{String.fromCharCode(0xf0ed)}</Text>
-                            <Text style={styles.cellTitle}>设置</Text>
-                            <Text style={styles.cellValue}></Text>
-                            <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
-                        </TouchableOpacity>
+
+                        {/*<TouchableOpacity style={styles.cellContentView} onPress={() => {*/}
+                        {/*this.openSetting();*/}
+                        {/*}}>*/}
+                        {/*<Text style={styles.cellIcon}>{String.fromCharCode(0xf0ed)}</Text>*/}
+                        {/*<Text style={styles.cellTitle}>设置</Text>*/}
+                        {/*<Text style={styles.cellValue}></Text>*/}
+                        {/*<Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>*/}
+                        {/*</TouchableOpacity>*/}
                     </View>
+                    {this.showLins()}
+                    {this._showToCManager()}
                 </ScrollView>
             </View>
         );
@@ -310,7 +547,7 @@ var styles = StyleSheet.create({
     // },
     scrollView: {
         flex: 1,
-        backgroundColor: "#EAEAEA",
+        backgroundColor: "#ffffff",
     },
     contentContainer: {
         // paddingVertical: 20
@@ -321,35 +558,74 @@ var styles = StyleSheet.create({
     cellContentView: {
         backgroundColor: "#FFF",
         flexDirection: "row",
-        height: ScreenUtils.scaleSize(44),
-        borderBottomWidth: 1,
-        borderColor: "#EAEAEA",
-        paddingLeft: ScreenUtils.scaleSize(10),
+        height: ScreenUtils.scaleSize(61),
+
+        paddingLeft: ScreenUtils.scaleSize(26),
         alignItems: "center",
         flex: 1,
     },
     cellIcon: {
-        width: ScreenUtils.scaleSize(24),
-        height: ScreenUtils.scaleSize(24),
-        lineHeight: ScreenUtils.scaleSize(24),
         fontFamily: "QTalk-QChat",
-        fontSize: ScreenUtils.setSpText(22),
-        color: "#888888",
+        fontSize: ScreenUtils.setSpText(28),
+        color: "#fc3da4",
         marginRight: ScreenUtils.scaleSize(5),
     },
     cellTitle: {
         width: ScreenUtils.scaleSize(100),
+        fontSize: ScreenUtils.setSpText(16),
+        marginLeft: ScreenUtils.scaleSize(12),
         color: "#333333",
     },
     cellValue: {
         flex: 1,
+
         textAlign: "right",
         color: "#999999",
     },
     rightArrow: {
+        fontFamily: "QTalk-QChat",
+        fontSize: ScreenUtils.setSpText(15),
+        width: ScreenUtils.scaleSize(20),
+        height: ScreenUtils.scaleSize(20),
+        marginRight: ScreenUtils.scaleSize(16),
+        color: '#333333',
+    },
+    rightArrow2: {
         width: ScreenUtils.scaleSize(20),
         height: ScreenUtils.scaleSize(20),
         marginRight: ScreenUtils.scaleSize(5),
+    },
+    backHeaderup: {
+        //enum('cover', 'contain', 'stretch', 'repeat', 'center')
+        backgroundColor: Platform.OS=='ios'?'#fafafa':'#f6f6f6',
+        height: ScreenUtils.scaleSize(197),
+        width: width,
+        resizeMode: 'stretch',
+        flexDirection: "row",
+        alignItems: "center",
+
+    },
+    backHeaderdown: {
+        //enum('cover', 'contain', 'stretch', 'repeat', 'center')
+
+        paddingLeft: ScreenUtils.scaleSize(15),
+        paddingRight: ScreenUtils.scaleSize(15),
+        height: ScreenUtils.scaleSize(62),
+        width: width,
+        backgroundColor: 'blue',
+        resizeMode: 'stretch',
+        flexDirection: "row",
+        alignItems: "center",
+
+    },
+    userHeader2: {
+        height: ScreenUtils.scaleSize(157),
+        flex: 1,
+        borderRadius: 6,
+        marginLeft: ScreenUtils.scaleSize(15),
+        marginRight: ScreenUtils.scaleSize(15),
+        backgroundColor: "#ffffff",
+        flexDirection: "column",
     },
     userHeader: {
         height: ScreenUtils.scaleSize(80),
@@ -358,6 +634,11 @@ var styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#EAEAEA",
         alignItems: "center",
+    },
+    userHeaderImage2: {
+        width: ScreenUtils.scaleSize(65),
+        height: ScreenUtils.scaleSize(65),
+        borderRadius: ScreenUtils.scaleSize(13),
     },
     userHeaderImage: {
         width: ScreenUtils.scaleSize(58),
@@ -390,6 +671,10 @@ var styles = StyleSheet.create({
     qrCodeIcon: {
         width: ScreenUtils.scaleSize(24),
         height: ScreenUtils.scaleSize(24),
+    },
+    qrCodeIcon2: {
+        width: ScreenUtils.scaleSize(17),
+        height: ScreenUtils.scaleSize(17),
     },
     walletInfo: {},
 });

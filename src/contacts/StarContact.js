@@ -57,7 +57,7 @@ export default class StarContact extends Component{
 
 
     componentWillUnmount() {
-        DeviceEventEmitter.removeAllListeners();
+        // DeviceEventEmitter.removeAllListeners();
     }
 
     selectStarContacts(){

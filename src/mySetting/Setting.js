@@ -43,6 +43,7 @@ export default class Setting extends Component {
             // startPushState: false,
             // notifyPushDetailsState: false,
             waterMarkState:true,
+            workWorldRemind:true,
             userModState: false,
             AppCache: "",
             ServiceState: "",
@@ -114,13 +115,25 @@ export default class Setting extends Component {
             this.AppVersion = "V" + appVersion;
         }.bind(this));
 
-        if (Platform.OS !== 'ios') {
+        // if (Platform.OS !== 'ios') {
             //获取是否开启聊天背景水印
             NativeModules.QimRNBModule.getWaterMark(function (isOpen) {
                 this.setState({
                     waterMarkState:isOpen,
                 });
             }.bind(this));
+        // }
+
+        try{
+            NativeModules.QimRNBModule.getworkWorldRemind(function (response) {
+
+                let state = response.state;
+                this.setState({
+                    workWorldRemind:state,
+                });
+            }.bind(this));
+        }catch (e){
+
         }
 
         this.willShow = NativeAppEventEmitter.addListener(
@@ -202,6 +215,17 @@ export default class Setting extends Component {
             NativeModules.QimRNBModule.openNativePage(params);
         } else if (Platform.OS == 'ios') {
             NativeModules.QimRNBModule.openMcConfig();
+        }
+    }
+
+    //设置提示音
+    alertSettingConfig() {
+        if (Platform.OS == 'android') {
+            //
+        }else if (Platform.OS = 'iOS'){
+            this.props.navigation.navigate('AlertVoiceSetting', {
+                'innerVC': true,
+            });
         }
     }
 
@@ -288,6 +312,18 @@ export default class Setting extends Component {
         NativeModules.QimRNBModule.setWaterMark(value);
     }
 
+    changeWorkWorldRemind(value){
+        NativeModules.QimRNBModule.updateWorkWorldRemind(value, function (response) {
+                if (response.ok) {
+
+                } else {
+                    Alert.alert("提示", "修改驼圈通知状态失败");
+                    this.setState({workWorldRemind: !value});
+                }
+            }.bind(this)
+        );
+    }
+
     _renderModSetting() {
         if (Platform.OS == 'ios') {
             return (<View>
@@ -303,13 +339,14 @@ export default class Setting extends Component {
                         </View>
                     </View>
 
-                    <TouchableOpacity style={styles.cellContentView} onPress={() => {
-                        this.openDressUpVC();
-                    }}>
-                        <Text style={styles.cellTitle}>个性装扮</Text>
-                        <Text style={styles.cellValue}></Text>
-                        <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
-                    </TouchableOpacity>
+                    {/*<TouchableOpacity style={styles.cellContentView} onPress={() => {*/}
+                        {/*this.openDressUpVC();*/}
+                    {/*}}>*/}
+                        {/*<Text style={styles.cellTitle}>个性装扮</Text>*/}
+                        {/*<Text style={styles.cellValue}></Text>*/}
+                        {/*<Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>*/}
+                    {/*</TouchableOpacity>*/}
+
                 </View>
 
                 <View style={styles.line}>
@@ -374,8 +411,44 @@ export default class Setting extends Component {
         }
     }
 
+    _shwoWorkWorld(){
+        if (AppConfig.isQtalk() && AppConfig.isShowWorkWorld()) {
+            return (
+                <View style={styles.cellContentView}>
+                    <Text style={styles.cellTitle}>驼圈提醒</Text>
+                    <View style={styles.cellValue2}>
+                        <Switch style={{transform: [{scaleX: .8}, {scaleY: 0.8}]}}
+                                value={this.state.workWorldRemind}
+                                onValueChange={(value) => {
+                                    this.setState({
+                                        workWorldRemind: value,
+                                    });
+                                    this.changeWorkWorldRemind(value);
+                                }}/>
+                    </View>
+                </View>
+            );
+        }
+    }
+    _showAlertVoice() {
+        if (Platform.OS == 'ios') {
+
+            return (
+                <View>
+                    <TouchableOpacity style={styles.cellContentView} onPress={() => {
+                        this.alertSettingConfig();
+                    }}>
+                        <Text style={styles.cellTitle}>提示音设置</Text>
+                        <Text style={styles.cellValue}></Text>
+                        <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
+                    </TouchableOpacity>
+                </View>
+            );
+        }
+    }
+
     _showWaterMark() {
-        if (Platform.OS == 'android') {
+        // if (Platform.OS == 'android') {
             return (
                 <View style={styles.cellContentView}>
                     <Text style={styles.cellTitle}>水印背景</Text>
@@ -391,9 +464,9 @@ export default class Setting extends Component {
                     </View>
                 </View>
             );
-        } else  {
-
-        }
+        // } else  {
+        //
+        // }
     }
 
     _showServiceState() {
@@ -510,11 +583,11 @@ export default class Setting extends Component {
 
 
                     <View>
-                        <TouchableOpacity style={styles.cellContentView} onPress={() => {
-                            this.openSearchHistoryVc();
-                        }}>
-                            <Text style={[styles.cellTitle, {color: "#03A9F4"}]}>历史消息查询</Text>
-                        </TouchableOpacity>
+                        {/*<TouchableOpacity style={styles.cellContentView} onPress={() => {*/}
+                            {/*this.openSearchHistoryVc();*/}
+                        {/*}}>*/}
+                            {/*<Text style={[styles.cellTitle, {color: "#03A9F4"}]}>历史消息查询</Text>*/}
+                        {/*</TouchableOpacity>*/}
                         {this._showClearButton()}
                     </View>
 
@@ -543,6 +616,9 @@ export default class Setting extends Component {
 
                         {this._showSysSetting()}
                         {this._showWaterMark()}
+                        {/*暂时注释，待接口完善*/}
+                        {this._shwoWorkWorld()}
+                        {this._showAlertVoice()}
 
                     </View>
                     <Text style={styles.sectionHeader}>

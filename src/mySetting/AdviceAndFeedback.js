@@ -49,7 +49,7 @@ export default class AdviceAndFeedback extends Component {
 
     componentWillUnmount() {
         this.unMount = true;
-        DeviceEventEmitter.removeAllListeners();
+        // DeviceEventEmitter.removeAllListeners();
     }
 
     updateFeedBackProgress(params) {
@@ -72,7 +72,10 @@ export default class AdviceAndFeedback extends Component {
     sendAdviceMsg() {
         if (this.state.adviceText && Platform.OS != 'ios') {
             LoadingView.show('发送中,请稍后');
-            NativeModules.QimRNBModule.sendAdviceMessage(this.state.adviceText,function (response) {
+            let param = {};
+            param["adviceText"] = this.state.adviceText;
+            param["logSelected"] = this.state.chooseLocalLog;
+            NativeModules.QimRNBModule.sendAdviceMessage(param,function (response) {
                 LoadingView.hidden();
                 if(response.ok){
                     let moduleName = "MySetting";
@@ -110,20 +113,18 @@ export default class AdviceAndFeedback extends Component {
     }
 
     showChooseLogView() {
-        if (Platform.OS === 'ios') {
-            return (
-                <View style={styles.checkBox}>
-                    <QIMCheckBox style={styles.ckBox} size={16} checked={this.state.chooseLocalLog} onValueChange={(value) => {
-                        console.log("更改checkBox状态 : "+ value);
-                        this.setState({
-                            chooseLocalLog:value,
-                        });
-                    }}
-                    />
-                    <Text style={styles.uploadLocalLog}>上传日志</Text>
-                </View>
-            );
-        }
+        return (
+            <View style={styles.checkBox}>
+                <QIMCheckBox style={styles.ckBox} size={16} checked={this.state.chooseLocalLog} onValueChange={(value) => {
+                    console.log("更改checkBox状态 : "+ value);
+                    this.setState({
+                        chooseLocalLog:value,
+                    });
+                }}
+                />
+                <Text style={styles.uploadLocalLog}>上传日志</Text>
+            </View>
+        );
     }
 
     render() {
@@ -184,7 +185,7 @@ var styles = StyleSheet.create({
     },
     textInput: {
         flex: 1,
-        height: 100,
+        height: 150,
         backgroundColor: "#FFF",
         marginTop: 10,
         marginLeft: -15,
@@ -199,7 +200,7 @@ var styles = StyleSheet.create({
         borderRadius: 5,
         alignItems: "center",
         justifyContent: "center",
-        marginTop: 30,
+        marginTop: 50,
     },
     sendBtnText: {
         fontSize: 16,

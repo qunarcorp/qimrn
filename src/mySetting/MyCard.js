@@ -43,7 +43,9 @@ export default class UserCard extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            userInfo: {},
+        };
         this.unMount = false;
         // this.onPressHeaderButton = this.onPressHeaderButton.bind(this);
     }
@@ -52,10 +54,13 @@ export default class UserCard extends Component {
         NativeModules.QimRNBModule.getMyInfo(function (responce) {
             let userInfo = responce.MyInfo;
             this.setState({userInfo: userInfo});
+            this.setState({userMood:userInfo["Mood"]});
         }.bind(this));
         NativeModules.QimRNBModule.getMyMood(function(responce){
-            let mood = responce.mood;
-            this.setState({userMood:mood});
+            if(responce){
+                let mood = responce.mood;
+                this.setState({userMood:mood});
+            }
         }.bind(this));
 
         //个性签名更新通知
@@ -243,6 +248,23 @@ export default class UserCard extends Component {
         }
     }
 
+    shoMyQrCode(){
+        // if(false){
+        //     return(
+        //         <TouchableOpacity style={styles.cellContentView} onPress={() => {
+        //             this.openUserQRCode();
+        //         }}>
+        //             <Text style={styles.cellTitle}>我的二维码</Text>
+        //             <View style={styles.cellQRCode}>
+        //                 <Image source={require('../images/qrcode.png')} style={styles.qrCodeIcon}/>
+        //             </View>
+        //             <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
+        //         </TouchableOpacity>
+        //     )
+        // }
+
+    }
+
 
     render() {
         let nickName = "";
@@ -286,15 +308,7 @@ export default class UserCard extends Component {
                             <Text style={styles.cellTitle}>部门</Text>
                             <Text style={styles.cellValue}>{department}</Text>
                         </View>
-                        <TouchableOpacity style={styles.cellContentView} onPress={() => {
-                            this.openUserQRCode();
-                        }}>
-                            <Text style={styles.cellTitle}>我的二维码</Text>
-                            <View style={styles.cellQRCode}>
-                                <Image source={require('../images/qrcode.png')} style={styles.qrCodeIcon}/>
-                            </View>
-                            <Image source={require('../images/arrow_right.png')} style={styles.rightArrow}/>
-                        </TouchableOpacity>
+                        {this.shoMyQrCode()}
                     </View>
                     <View style={styles.line}>
 

@@ -26,6 +26,7 @@ import DateUtil from '../common/DateUtil';
 import AppConfig from './../common/AppConfig';
 import QIMTextInput from './../common/QIMTextInput';
 
+
 var width = Dimensions.get('window').width;
 var height = Dimensions.get('window').height;
 
@@ -110,6 +111,7 @@ export default class CreateTrip extends Component {
         var allTime = moment().format("YYYY-MM-DD");
         this.isShowDetails = !this.props.navigation.state.params.isCreate;
 
+
         // let aa ='1';
         // var this.isShowDetails = aa==1;
         var begin = DateUtil.TimeToHours(time);
@@ -140,7 +142,7 @@ export default class CreateTrip extends Component {
             tripInviter: this.isShowDetails ? item['tripInviter'] : '',
             tripId: this.isShowDetails ? item['tripId'] : '',//会议id
             tripName: this.isShowDetails ? item['tripName'] : '',//会议名称
-            tripType: this.isShowDetails ? parseInt(item['tripType']) : 1,//会议类型
+            tripType: AppConfig.isEasyTrip() ? 2 : ( this.isShowDetails ? parseInt(item['tripType']) : 1),//会议类型
             tripDate: this.isShowDetails ? item['tripDate'] : null,//会议日期
             tripRoom: this.isShowDetails ? item['tripRoom'] : '',//会议室名
             tripRoomNumber: this.isShowDetails ? parseInt(item['tripRoomNumber']) : 0,//会议室编号
@@ -231,67 +233,90 @@ export default class CreateTrip extends Component {
 
     showtripTypeLocationChange() {
         // alert(id);
-        if (this.state.isShow) {
-            // return (
-            //     <View style={[styles.rowView, styles.maleft64, styles.marginTop18, styles.marginBottom18]}>
-            //         <Text style={styles.normalTextLeft}>地点</Text>
-            //
-            //         <Text style={styles.normalTextLeft}>{this.state.appointment}</Text>
-            //     </View>
-            // );
+        if (AppConfig.isEasyTrip()) {
             return (
-                <View style={[styles.rowView, {marginTop: 32}]}>
-                    <Image source={require('../images/Placeholder75.png')}
-                           style={{height: 24, width: 24, marginLeft: 14}}/>
-                    {/*<Text style={[styles.normalTextLeft,styles.marginLeft26]}>行程地点</Text>*/}
-
-                    <Text
-                        style={[styles.normalTextLeft, styles.marginLeft26]}>{this.state.appointment ? this.state.appointment : '异常地点'}</Text>
-
-
+                <View>
+                    <View style={[styles.rowView, styles.marginTop18, styles.marginBottom18]}>
+                        <Image source={require('../images/Placeholder75.png')}
+                               style={{height: 24, width: 24, marginLeft: 14}}/>
+                        {/*<Text style={[styles.normalTextLeft, {flex: 2}, styles.marginLeft26]}>约会地点</Text>*/}
+                        <QIMTextInput style={[styles.normalTextLeft, styles.marginLeft26, {
+                            backgroundColor: '#ffffff', height: 20,
+                            padding: 0, textAlignVertical: 'top'
+                        }]}
+                                      underlineColorAndroid='transparent'
+                                      value={this.state.partyStr}
+                                      editable={!this.state.isShow}
+                                      onChangeText={this._onPartyChange.bind(this)}
+                                      placeholder={'点击输入会议地点'}
+                        ></QIMTextInput>
+                    </View>
+                    <View style={styles.divider}></View>
                 </View>
             );
         } else {
-            if (this.state.tripType == 1) {
+            if (this.state.isShow) {
+                // return (
+                //     <View style={[styles.rowView, styles.maleft64, styles.marginTop18, styles.marginBottom18]}>
+                //         <Text style={styles.normalTextLeft}>地点</Text>
+                //
+                //         <Text style={styles.normalTextLeft}>{this.state.appointment}</Text>
+                //     </View>
+                // );
                 return (
-                    <TouchableOpacity style={{}} onPress={() => {
-                        this.selectLocal();
-                    }}>
+                    <View style={[styles.rowView, {marginTop: 32}]}>
+                        <Image source={require('../images/Placeholder75.png')}
+                               style={{height: 24, width: 24, marginLeft: 14}}/>
+                        {/*<Text style={[styles.normalTextLeft,styles.marginLeft26]}>行程地点</Text>*/}
 
-                        <View style={[styles.rowView, styles.marginTop18, styles.marginBottom18]}>
-                            <Image source={require('../images/Placeholder75.png')}
-                                   style={{height: 24, width: 24, marginLeft: 14}}/>
-                            {/*<Text style={[styles.normalTextLeft,styles.marginLeft26]}>行程地点</Text>*/}
-
-                            <Text
-                                style={[styles.normalTextLeft, styles.marginLeft26]}>{this.state.appointment ? this.state.appointment : this.addLocation}</Text>
+                        <Text
+                            style={[styles.normalTextLeft, styles.marginLeft26]}>{this.state.appointment ? this.state.appointment : '异常地点'}</Text>
 
 
-                        </View>
-                        <View style={styles.divider}></View>
-                    </TouchableOpacity>
-                );
-            } else if (this.state.tripType == 2) {
-                return (
-                    <View>
-                        <View style={[styles.rowView, styles.marginTop18, styles.marginBottom18]}>
-                            <Image source={require('../images/Placeholder75.png')}
-                                   style={{height: 24, width: 24, marginLeft: 14}}/>
-                            {/*<Text style={[styles.normalTextLeft, {flex: 2}, styles.marginLeft26]}>约会地点</Text>*/}
-                            <QIMTextInput style={[styles.normalTextLeft, styles.marginLeft26, {
-                                backgroundColor: '#ffffff', height: 20,
-                                padding: 0, textAlignVertical: 'top'
-                            }]}
-                                       underlineColorAndroid='transparent'
-                                       value={this.state.partyStr}
-                                       editable={!this.state.isShow}
-                                       onChangeText={this._onPartyChange.bind(this)}
-                                       placeholder={'点击输入约会地点'}
-                            ></QIMTextInput>
-                        </View>
-                        <View style={styles.divider}></View>
                     </View>
                 );
+            } else {
+                if (this.state.tripType == 1) {
+                    return (
+                        <TouchableOpacity style={{}} onPress={() => {
+                            this.selectLocal();
+                        }}>
+
+                            <View style={[styles.rowView, styles.marginTop18, styles.marginBottom18]}>
+                                <Image source={require('../images/Placeholder75.png')}
+                                       style={{height: 24, width: 24, marginLeft: 14}}/>
+                                {/*<Text style={[styles.normalTextLeft,styles.marginLeft26]}>行程地点</Text>*/}
+
+                                <Text
+                                    style={[styles.normalTextLeft, styles.marginLeft26]}>{this.state.appointment ? this.state.appointment : this.addLocation}</Text>
+
+
+                            </View>
+                            <View style={styles.divider}></View>
+                        </TouchableOpacity>
+                    );
+                } else if (this.state.tripType == 2) {
+                    return (
+                        <View>
+                            <View style={[styles.rowView, styles.marginTop18, styles.marginBottom18]}>
+                                <Image source={require('../images/Placeholder75.png')}
+                                       style={{height: 24, width: 24, marginLeft: 14}}/>
+                                {/*<Text style={[styles.normalTextLeft, {flex: 2}, styles.marginLeft26]}>约会地点</Text>*/}
+                                <QIMTextInput style={[styles.normalTextLeft, styles.marginLeft26, {
+                                    backgroundColor: '#ffffff', height: 20,
+                                    padding: 0, textAlignVertical: 'top'
+                                }]}
+                                              underlineColorAndroid='transparent'
+                                              value={this.state.partyStr}
+                                              editable={!this.state.isShow}
+                                              onChangeText={this._onPartyChange.bind(this)}
+                                              placeholder={'点击输入约会地点'}
+                                ></QIMTextInput>
+                            </View>
+                            <View style={styles.divider}></View>
+                        </View>
+                    );
+                }
             }
         }
 
@@ -335,18 +360,33 @@ export default class CreateTrip extends Component {
     }
 
     checkTime(dateTime) {
-
-
-        if (!moment(this.state.beginTime).isBefore(dateTime)) {
-            alert('结束时间必须大约开始时间');
-            return;
+        if (Platform.OS == 'ios') {
+            if (!moment(this.state.beginTime).isBefore(dateTime)) {
+                this.datePicker.onPressCancel();
+                this.dateAlertTimer = setTimeout(function () {
+                    alert('结束时间必须大约开始时间');
+                    typeof options === 'function' ? options && options(): null
+                }, 500)
+                // return;
+            } else {
+                this.setState({
+                    endTime: dateTime,
+                    noAllDayEndTime: dateTime,
+                    noChangEndTime: this.state.dataPickerEnable ? this.state.noChangEndTime : dateTime
+                });
+            }
+        } else {
+            if (!moment(this.state.beginTime).isBefore(dateTime)) {
+                alert('结束时间必须大约开始时间');
+                return;
+            } else {
+                this.setState({
+                    endTime: dateTime,
+                    noAllDayEndTime: dateTime,
+                    noChangEndTime: this.state.dataPickerEnable ? this.state.noChangEndTime : dateTime
+                });
+            }
         }
-        this.setState({
-            endTime: dateTime,
-            noAllDayEndTime: dateTime,
-            noChangEndTime: this.state.dataPickerEnable ? this.state.noChangEndTime : dateTime
-        })
-
     }
 
     setBeginTime(datetime) {
@@ -375,6 +415,7 @@ export default class CreateTrip extends Component {
                         <View style={[styles.rowView, styles.boxBody, styles.maleft64]}>
                             <Text style={styles.normalTextLeft}>指定日期</Text>
                             <DatePicker
+                                ref={datePicker => this.datePicker = datePicker}
                                 disabled={this.state.dataPickerEnableMandatory ? this.state.dataPickerEnable : this.state.dataPickerEnableMandatory}
                                 style={[styles.normalTextRight, styles.meright16]}
                                 date={this.state.beginTime}
@@ -382,8 +423,8 @@ export default class CreateTrip extends Component {
                                 minDate={moment().format("YYYY-MM-DD HH:mm")}
                                 // maxDate={DateUtil.TimeDayAdd(moment().format("YYYY-MM-DD HH:mm"),4)}
                                 format="YYYY-MM-DD"
-                                confirmBtnText="Confirm"
-                                cancelBtnText="Cancel"
+                                confirmBtnText="确定"
+                                cancelBtnText="取消"
                                 showIcon={false}
                                 minuteInterval={10}
                                 onDateChange={(datetime) => {
@@ -444,6 +485,7 @@ export default class CreateTrip extends Component {
                                 <Text style={[styles.normalTextLeft, styles.marginLeft26]}>开始时间</Text>
 
                                 <DatePicker
+                                    ref={datePicker => this.datePicker = datePicker}
                                     disabled={this.state.dataPickerEnableMandatory ? this.state.dataPickerEnable : this.state.dataPickerEnableMandatory}  //本页面暂时不可更改时间
                                     style={[styles.normalTextRight, styles.meright16, {border: 0}]}
                                     date={this.state.beginTime}
@@ -451,8 +493,8 @@ export default class CreateTrip extends Component {
                                     minDate={moment().format("YYYY-MM-DD HH:mm")}
                                     // maxDate={DateUtil.TimeDayAdd(moment().format("YYYY-MM-DD HH:mm"),4)}
                                     format="YYYY-MM-DD HH:mm"
-                                    confirmBtnText="Confirm"
-                                    cancelBtnText="Cancel"
+                                    confirmBtnText="确定"
+                                    cancelBtnText="取消"
                                     showIcon={false}
                                     minuteInterval={10}
                                     onDateChange={(datetime) => {
@@ -469,15 +511,16 @@ export default class CreateTrip extends Component {
                                 <Text style={styles.normalTextLeft}>结束时间</Text>
 
                                 <DatePicker
+                                    ref={datePicker => this.datePicker = datePicker}
                                     disabled={this.state.dataPickerEnableMandatory ? this.state.dataPickerEnable : this.state.dataPickerEnableMandatory} //本页面暂时不可更改时间
                                     style={[styles.normalTextRight, styles.meright16]}
                                     date={this.state.endTime}
                                     minDate={moment(this.state.beginTime).format("YYYY-MM-DD")}
-                                    maxDate={moment(this.state.beginTime).format("YYYY-MM-DD")}
+                                    // maxDate={moment(this.state.beginTime).format("YYYY-MM-DD")}
                                     mode="datetime"
                                     format="YYYY-MM-DD HH:mm"
-                                    confirmBtnText="Confirm"
-                                    cancelBtnText="Cancel"
+                                    confirmBtnText="确定"
+                                    cancelBtnText="取消"
                                     showIcon={false}
                                     minuteInterval={10}
                                     onDateChange={(datetime) => {
@@ -939,6 +982,7 @@ export default class CreateTrip extends Component {
     componentWillUnmount() {
         this.updateTD.remove();
         this.updateSelectMember.remove();
+        this.timer && clearTimeout(this.timer);
     }
 
     showAllDayButton() {
@@ -1064,64 +1108,68 @@ export default class CreateTrip extends Component {
     }
 
     showTripTypeButton() {
-        if (this.state.isShow) {
-            // return (
-            //     <View style={styles.box}>
-            //         <View style={styles.rowView}>
-            //             <Text style={{flex: 1}}>行程类型</Text>
-            //             <Text
-            //                 style={{flex: 1, flexDirection: 'row', alignItems: 'flex-start'}}
-            //             >
-            //                 {this.showTripTypeText(this.state.tripType)}
-            //             </Text>
-            //
-            //         </View>
-            //     </View>
-            // )
+
+        if (AppConfig.isEasyTrip()) {
+
         } else {
-            return (
-
-                <TouchableOpacity style={{}} onPress={() => {
-                    this.selectTripType();
-                }}>
-
-                    <View style={[styles.rowView, styles.marginTop18, styles.marginBottom18]}>
-                        <Image source={require('../images/Placeholder74.png')}
-                               style={{height: 24, width: 24, marginLeft: 14}}/>
-                        {/*<Text style={[styles.normalTextLeft,styles.marginLeft26]}>行程地点</Text>*/}
-
-                        <Text
-                            style={[styles.normalTextLeft, styles.marginLeft26]}>{this.showTripTypeText(this.state.tripType)}</Text>
-
-                        <Image source={require('../images/arrow_right.png')}
-                               style={[{height: 24, width: 24,}, styles.meright16]}/>
-
-                    </View>
-                    <View style={styles.divider}></View>
-                </TouchableOpacity>
-
-
-                // <View style={styles.box}>
-                //     <View style={styles.rowView}>
-                //         <Text style={{flex: 1}}>行程类型</Text>
-                //         <RadioModal
-                //             style={{flex: 2, flexDirection: 'row', alignItems: 'flex-start'}}
-                //             selectedValue={this.state.tripType}
+            if (this.state.isShow) {
+                // return (
+                //     <View style={styles.box}>
+                //         <View style={styles.rowView}>
+                //             <Text style={{flex: 1}}>行程类型</Text>
+                //             <Text
+                //                 style={{flex: 1, flexDirection: 'row', alignItems: 'flex-start'}}
+                //             >
+                //                 {this.showTripTypeText(this.state.tripType)}
+                //             </Text>
                 //
-                //             onValueChange={(id, item) => {
-                //                 this.tripTypeChange(id, item)
-                //             }}
-                //
-                //         >
-                //             <Text value={1}>会议</Text>
-                //             <Text value={2}>约会</Text>
-                //
-                //         </RadioModal>
+                //         </View>
                 //     </View>
-                // </View>
-            );
-        }
+                // )
+            } else {
+                return (
 
+                    <TouchableOpacity style={{}} onPress={() => {
+                        this.selectTripType();
+                    }}>
+
+                        <View style={[styles.rowView, styles.marginTop18, styles.marginBottom18]}>
+                            <Image source={require('../images/Placeholder74.png')}
+                                   style={{height: 24, width: 24, marginLeft: 14}}/>
+                            {/*<Text style={[styles.normalTextLeft,styles.marginLeft26]}>行程地点</Text>*/}
+
+                            <Text
+                                style={[styles.normalTextLeft, styles.marginLeft26]}>{this.showTripTypeText(this.state.tripType)}</Text>
+
+                            <Image source={require('../images/arrow_right.png')}
+                                   style={[{height: 24, width: 24,}, styles.meright16]}/>
+
+                        </View>
+                        <View style={styles.divider}></View>
+                    </TouchableOpacity>
+
+
+                    // <View style={styles.box}>
+                    //     <View style={styles.rowView}>
+                    //         <Text style={{flex: 1}}>行程类型</Text>
+                    //         <RadioModal
+                    //             style={{flex: 2, flexDirection: 'row', alignItems: 'flex-start'}}
+                    //             selectedValue={this.state.tripType}
+                    //
+                    //             onValueChange={(id, item) => {
+                    //                 this.tripTypeChange(id, item)
+                    //             }}
+                    //
+                    //         >
+                    //             <Text value={1}>会议</Text>
+                    //             <Text value={2}>约会</Text>
+                    //
+                    //         </RadioModal>
+                    //     </View>
+                    // </View>
+                );
+            }
+        }
 
     }
 
@@ -1186,16 +1234,16 @@ export default class CreateTrip extends Component {
             return (
                 <View style={[{marginLeft: 16, marginTop: 17}]}>
                     <QIMTextInput style={[styles.boxBody, {backgroundColor: '#ffffff', fontSize: 16, color: '#9E9E9E'}]}
-                               autoFocus={this.state.isShow ? false : true}
-                               underlineColorAndroid='transparent' clearButtonMode={'always'}
-                               placeholder={'请输入行程主题'}
-                               editable={!this.state.isShow}
-                               value={this.state.tripName}
-                               onChangeText={(text) => {
-                                   this.setState({
-                                       tripName: text,
-                                   })
-                               }}
+                                  autoFocus={this.state.isShow ? false : true}
+                                  underlineColorAndroid='transparent' clearButtonMode={'always'}
+                                  placeholder={'请输入行程主题'}
+                                  editable={!this.state.isShow}
+                                  value={this.state.tripName}
+                                  onChangeText={(text) => {
+                                      this.setState({
+                                          tripName: text,
+                                      })
+                                  }}
                     ></QIMTextInput>
                 </View>
             );
