@@ -5,7 +5,7 @@
  * @类描述:
  * @版本:       V3.0.0
  * @作者        bigwhite
- * @创建时间    2018-09-18 15:00
+ * @创建时间    2019-04-02 11:33
  *
  * @修改记录：
  -----------------------------------------------------------------------------------------------
@@ -27,9 +27,9 @@ import {
 } from "react-native";
 import NavCBtn from "../common/NavCBtn";
 
-export class TripAreaSelect extends Component {
+export class TripCitySelect extends Component {
     static navigationOptions = ({navigation}) => {
-        let headerTitle = "选择区域";
+        let headerTitle = "选择城市";
         let props = {navigation: navigation, btnType: NavCBtn.BACK_BUTTON};
         let leftBtn = (<NavCBtn {...props}/>);
         return {
@@ -46,8 +46,7 @@ export class TripAreaSelect extends Component {
         super(props)
 
         this.state = {
-            // tripAddressNumber: this.props.navigation.state.params.tripAddressNumber,
-            tripCityId:this.props.navigation.state.params.tripCityId,
+            tripAddressNumber: this.props.navigation.state.params.tripAddressNumber,
             addresses:[],
         }
     }
@@ -58,7 +57,7 @@ export class TripAreaSelect extends Component {
 
         if(type==this.state.tripAddressNumber){
             return(
-                <Text style={TripAreaSelectStyles.iconStyle}>{String.fromCharCode(0xe1d1)}</Text>
+                <Text style={TripCitySelectStyles.iconStyle}>{String.fromCharCode(0xe1d1)}</Text>
             );
         }
 
@@ -71,12 +70,12 @@ export class TripAreaSelect extends Component {
                     this.clickItem.bind(this, item, index)
                 }>
                     <View style={{flexDirection: 'column'}}>
-                        <View style={[{flexDirection:'row',justifyContent:'space-between'},TripAreaSelectStyles.itemView]}>
-                            <Text style={[TripAreaSelectStyles.itemText]}>{item['AddressName']}</Text>
+                        <View style={[{flexDirection:'row',justifyContent:'space-between'},TripCitySelectStyles.itemView]}>
+                            <Text style={[TripCitySelectStyles.itemText]}>{item['CityName']}</Text>
                             {/*{this.showSelect(item['AddressNumber'])}*/}
 
                         </View>
-                        <View style={[TripAreaSelectStyles.divider]}/>
+                        <View style={[TripCitySelectStyles.divider]}/>
 
                     </View>
                 </TouchableOpacity>
@@ -86,18 +85,27 @@ export class TripAreaSelect extends Component {
     };
 
     clickItem(item, index) {
-        let par = {};
-        par['AddressName']=item['AddressName'];
-        par['AddressNumber']=item['AddressNumber'];
-        par['rEndTime']=item['rEndTime'];
-        par['rStartTime']=item['rStartTime'];
-        DeviceEventEmitter.emit("updateTripArea", par);
-        this.props.navigation.goBack();
+
+        this.props.navigation.navigate('TripAreaSelect', {
+            // userSelect: selectUsers,
+            // beginTime: this.state.beginTime,
+            // endTime: this.state.endTime,
+            tripCityId: item['CityId'],
+        });
+
+
+        // let par = {};
+        // par['AddressName']=item['AddressName'];
+        // par['AddressNumber']=item['AddressNumber'];
+        // par['rEndTime']=item['rEndTime'];
+        // par['rStartTime']=item['rStartTime'];
+        // DeviceEventEmitter.emit("updateTripArea", par);
+        // this.props.navigation.goBack();
     }
 
     render() {
         return (
-            <View style={TripAreaSelectStyles.container}>
+            <View style={TripCitySelectStyles.container}>
                 <FlatList
                     data={this.state.addresses}
                     extraData={this.state}
@@ -110,15 +118,11 @@ export class TripAreaSelect extends Component {
     }
 
     componentDidMount() {
-
-        let params ={};
-        params['cityId'] = this.state.tripCityId;
-
-        NativeModules.QimRNBModule.getNewTripArea(params,
+        NativeModules.QimRNBModule.getTripCity(
             function (response) {
                 if (response.ok) {
                     this.setState({
-                        addresses: response.areaList,
+                        addresses: response.cityList,
                     });
                 } else {
                     alert('出现不可预估错误,请重试!');
@@ -126,26 +130,18 @@ export class TripAreaSelect extends Component {
             }.bind(this)
         )
 
-        // NativeModules.QimRNBModule.getTripArea(
-        //     function (response) {
-        //         if (response.ok) {
-        //             this.setState({
-        //                 addresses: response.areaList,
-        //             });
-        //         } else {
-        //             alert('出现不可预估错误,请重试!');
-        //         }
-        //     }.bind(this)
-        // )
+        this.updateArea = DeviceEventEmitter.addListener('updateTripArea', function (params) {
+            this.props.navigation.goBack();
+        }.bind(this));
     }
 
     componentWillUnmount() {
-
+        this.updateArea.remove();
     }
 }
 
 let {width, height} = Dimensions.get("window")
-const TripAreaSelectStyles = StyleSheet.create({
+const TripCitySelectStyles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',

@@ -16,7 +16,8 @@ export default class UserQRCode extends Component {
     static navigationOptions = ({navigation}) => {
         let headerTitle = "二维码名片";
         let props = {navigation:navigation,btnType:NavCBtn.BACK_BUTTON};
-        let leftBtn = (<NavCBtn {...props}/>);
+        // let leftBtn = (<NavCBtn {...props}/>);
+        let leftBtn = (<NavCBtn btnType={NavCBtn.EXIT_APP} moduleName={"MySetting"}/>);
         return {
             headerTitle: headerTitle,
             headerTitleStyle: {

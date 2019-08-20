@@ -195,6 +195,7 @@ const styles = StyleSheet.create({
     },
 
     sectionItem: {
-        fontSize: 12
+        fontSize: 11,
+        color: '#B4B4B4',
     }
 });

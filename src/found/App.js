@@ -6,19 +6,22 @@ import {
     UIManager,
     NativeModules, NativeAppEventEmitter,
 } from 'react-native';
-import {StackNavigator,NavigationActions} from 'react-navigation';
+import {StackNavigator, NavigationActions} from 'react-navigation';
 import CardStackStyleInterpolator from 'react-navigation/src/views/CardStack/CardStackStyleInterpolator';
+
 UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 
 import FoundPage from './qim_found';
 import AppList from './qim_app_list';
+import NewFound from './NewFound';
 import checkVersion from "./../conf/AutoUpdateRNBundle";
 
 export default class App extends Component {
     constructor(props) {
         super(props);
 
-        let route = {name:this.props.Screen?this.props.Screen:"FoundPage"};
+        let route = {name: this.props.Screen ? this.props.Screen : "FoundPage"};
+        //  let route = {name: this.props.Screen ? this.props.Screen : "NewFound"};
         let initData = this.props;
         this.AppStack = StackNavigator({
             // 发现页设置
@@ -29,9 +32,12 @@ export default class App extends Component {
             'AppList': {
                 screen: AppList,
             },
+            'NewFound': {
+                screen: NewFound,
+            },
         }, {
-            mode:'card',
-            headerMode:'screen',
+            mode: 'card',
+            headerMode: 'screen',
             initialRouteName: route.name,
             initialRouteParams: initData,
             transitionConfig: () => ({screenInterpolator: CardStackStyleInterpolator.forHorizontal})
@@ -45,7 +51,9 @@ export default class App extends Component {
                 if (action.type === NavigationActions.BACK) {
                     if (stateIndex == 0) {
                         if (Platform.OS === 'ios') {
-                            NativeModules.ExitApp.exitApp(() => {}, () => {});
+                            NativeModules.ExitApp.exitApp(() => {
+                            }, () => {
+                            });
                         } else {
                             BackHandler.exitApp();
                         }

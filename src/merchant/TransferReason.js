@@ -98,8 +98,6 @@ export default class TransferReason extends Component{
         }
     }
 
-
-
     render(){
         return (
             <View style={styles.wrapper}>

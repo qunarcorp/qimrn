@@ -6,27 +6,40 @@ import {
 import CookieManager from 'react-native-cookies';
 
 var AppConfig = {
-    _projectType : 0,
-    _loaded : false,
-    _httpHost : null,
-    _userId : null,
-    _domain : null,
-    _ckey : null,
-    _clientIp : null,
-    _RNAboutView : false,
+    _projectType: 0,
+    _loaded: false,
+    _httpHost: null,
+    _userId: null,
+    _domain: null,
+    _ckey: null,
+    _clientIp: null,
+    _RNAboutView: false,
     _RNMineView: true,
-    _RNGroupCardView : true,
-    _RNContactView : true,
-    _RNSettingView : true,
-    _RNUserCardView : true,
+    _RNGroupCardView: true,
+    _RNContactView: true,
+    _RNSettingView: true,
+    _RNUserCardView: true,
     _RNGroupListView: true,
     _RNPublicNumberListView: true,
-    _showOrganizational : false,
+    _showOrganizational: false,
     _showOA: false,
-    _showServiceState:true,
-    _isQtalk:true,
-    _fileUrl:null,
-    _qcAdminHost:null,
+    _showServiceState: true,
+    _isShowWorkWorld: false,
+    _isShowRedPackage: true,
+    _notNeedShowLeaderInfo: false,
+    _notNeedShowMobileInfo: false,
+    _notNeedShowEmailInfo: false,
+    _showGroupQRCode: true,
+    _showLocalQuickSearch: true,
+    _isShowRedPackage: true,
+    _notNeedShowFriendBtn: false,
+    _isQtalk: true,
+    _fileUrl: null,
+    _qcAdminHost: null,
+    _isEasyTrip: false,
+    _isiOSIpad: false,
+    _isToCManager:false,
+    _iPadScreenWidth: 0,
 };
 
 // 逆追踪定位
@@ -38,25 +51,25 @@ AppConfig.CLOCK_LIST_METHOD = "/qtapi/dailymark/getMultiDayMark.qunar";
 AppConfig.CLOCK_DETAIL_METHOD = "/qtapi/dailymark/getOneDayMark.qunar";
 
 let __HttpHost = "http://qt.qunar.com/test_public/public/";
-AppConfig.FOUND_SETTING = __HttpHost+"mainSite/HttpApi/appStoreApi.php?action=getAllFoundSetting";
-AppConfig.APP_CHECK = __HttpHost+"mainSite/HttpApi/appStoreApi.php?action=appCheck";
+AppConfig.FOUND_SETTING = __HttpHost + "mainSite/HttpApi/appStoreApi.php?action=getAllFoundSetting";
+AppConfig.APP_CHECK = __HttpHost + "mainSite/HttpApi/appStoreApi.php?action=appCheck";
 
 AppConfig.checkConfig = function () {
-    if(__DEV__){
+    if (__DEV__) {
         // debug模式
-        if (!this._httpHost){
+        if (!this._httpHost) {
             alert("未设置HttpHost");
         }
-        if (!this._userId){
+        if (!this._userId) {
             alert("未设置UserId");
         }
-        if (!this._domain){
+        if (!this._domain) {
             alert("未设置Domain");
         }
-        if (!this._ckey){
+        if (!this._ckey) {
             alert("未设置Ckey");
         }
-        if (!this._clientIp){
+        if (!this._clientIp) {
             alert("未设置Clinet Ip");
         }
     } else {
@@ -64,7 +77,7 @@ AppConfig.checkConfig = function () {
     }
 }
 
-AppConfig.initConfig = function() {
+AppConfig.initConfig = function () {
     return new Promise(function (resolve, reject) {
         let QimRNBModule = NativeModules.QimRNBModule;
         QimRNBModule.appConfig(function (config) {
@@ -79,10 +92,14 @@ AppConfig.initConfig = function() {
             this._clientIp = config.clientIp;
             this._showServiceState = config.showServiceState;
             this._isQtalk = config.isQtalk;
+            this._isShowWorkWorld = config.isShowWorkWorld;
+            this._notNeedShowLeaderInfo = config.notNeedShowLeaderInfo;
+            this._notNeedShowEmailInfo = config.notNeedShowEmailInfo;
+            this._notNeedShowMobileInfo = config.notNeedShowMobileInfo;
             this._fileUrl = config.fileUrl;
             this._qcAdminHost = config.qcAdminHost;
-
-                this._RNContactView = parseInt(config.RNContactView);
+            this._isEasyTrip = Boolean(config.isEasyTrip);
+            this._RNContactView = parseInt(config.RNContactView);
             // console.log("_RNContactView === " + this._RNContactView);
 
             this._RNMineView = parseInt(config._RNMineView);
@@ -106,12 +123,22 @@ AppConfig.initConfig = function() {
             this._RNPublicNumberListView = Boolean(config.RNPublicNumberListView);
             // console.log("_RNPublicNumberListView === " + this._RNPublicNumberListView);
 
-            this._showOrganizational = parseInt(config.showOrganizational);
+            this._showOrganizational = Boolean(config.showOrganizational);
             // console.log("_showOrganizational === " + this._showOrganizational);
+
+            this._showGroupQRCode = Boolean(config.isShowGroupQRCode);
+
+            this._showLocalQuickSearch = Boolean(config.isShowLocalQuickSearch);
 
             this._showOA = parseInt(config.showOA);
             // console.log("_showOA === " + this._showOA);
+            this._isShowRedPackage = Boolean(config.isShowRedPackage);
 
+            this._isiOSIpad = Boolean(config.isiOSIpad);
+
+            this._iPadScreenWidth = parseInt(config.ScreenWidth);
+
+            this._isToCManager = Boolean(config.isToCManager);
 
             this.checkConfig();
             this._loaded = true;
@@ -124,24 +151,24 @@ AppConfig.initConfig = function() {
             //             console.log('CookieManager.setFromResponse =>', res);
             //         });
             // } else {
-                CookieManager.set({
-                    name: 'q_ckey',
-                    value: this._ckey,
-                    domain: this._domain,
-                    origin: this._domain,
-                    path: '/',
-                    version: '1',
-                    expiration: '2099-05-30T12:30:00.00-05:00'
-                }).then((res) => {
-                    // console.log('CookieManager.set =>', res);
-                });
+            CookieManager.set({
+                name: 'q_ckey',
+                value: this._ckey,
+                domain: this._domain,
+                origin: this._domain,
+                path: '/',
+                version: '1',
+                expiration: '2099-05-30T12:30:00.00-05:00'
+            }).then((res) => {
+                // console.log('CookieManager.set =>', res);
+            });
             // }
             resolve();
         }.bind(this));
     }.bind(this));
 }
 
-AppConfig.getQCAdminHost = function() {
+AppConfig.getQCAdminHost = function () {
     if (!this._loaded) {
         this.initConfig();
     }
@@ -151,18 +178,89 @@ AppConfig.getQCAdminHost = function() {
     return this._qcAdminHost;
 }
 
-AppConfig.getShowServiceState = function() {
+AppConfig.getShowServiceState = function () {
     if (!this._loaded) {
         this.initConfig();
     }
     return this._showServiceState;
 }
 
-AppConfig.isQtalk = function() {
+AppConfig.isQtalk = function () {
     if (!this._loaded) {
         this.initConfig();
     }
     return this._isQtalk;
+}
+
+
+AppConfig.isEasyTrip = function () {
+    if (!this._loaded) {
+        this.initConfig();
+    }
+    return this._isEasyTrip;
+}
+
+AppConfig.isShowWorkWorld = function () {
+    if (!this._loaded) {
+        this.initConfig();
+    }
+    return this._isShowWorkWorld;
+}
+
+AppConfig.isShowRedPackage = function () {
+    if (!this._loaded) {
+        this.initConfig();
+    }
+    return this._isShowRedPackage;
+}
+
+AppConfig.notNeedShowLeaderInfo = function () {
+    if (!this._loaded) {
+        this.initConfig();
+    }
+    return this._notNeedShowLeaderInfo;
+}
+
+AppConfig.notNeedShowMobileInfo = function () {
+    if (!this._loaded) {
+        this.initConfig();
+    }
+    return this._notNeedShowMobileInfo;
+}
+
+AppConfig.notNeedShowEmailInfo = function () {
+    if (!this._loaded) {
+        this.initConfig();
+    }
+    return this._notNeedShowEmailInfo;
+}
+
+AppConfig.notNeedShowFriendBtn = function () {
+    if (!this._notNeedShowFriendBtn) {
+        this.initConfig();
+    }
+    return this._notNeedShowFriendBtn;
+}
+
+AppConfig.showGroupQRCode = function () {
+    if (!this._loaded) {
+        this.initConfig();
+    }
+    return this._showGroupQRCode;
+}
+
+AppConfig.showLocalQuickSearch = function () {
+    if (!this._loaded) {
+        this.initConfig();
+    }
+    return this._showLocalQuickSearch;
+}
+
+AppConfig.isShowRedPackage = function () {
+    if (!this._loaded) {
+        this.initConfig();
+    }
+    return this._isShowRedPackage;
 }
 
 AppConfig.getProjectType = function () {
@@ -193,7 +291,7 @@ AppConfig.getRNSettingView = function () {
     return this._RNSettingView;
 }
 
-AppConfig.getIsQtalk = function(){
+AppConfig.getIsQtalk = function () {
     if (!this._loaded) {
         this.initConfig();
     }
@@ -266,6 +364,13 @@ AppConfig.getUserId = function () {
     return this._userId;
 }
 
+AppConfig.isToCManager = function(){
+    if(!this._loaded){
+        this.initConfig();
+    }
+    return this._isToCManager;
+}
+
 AppConfig.getDomain = function () {
     if (!this._loaded) {
         // alert("getDomain");
@@ -288,6 +393,27 @@ AppConfig.getClientIp = function () {
         this.initConfig();
     }
     return this._clientIp;
+}
+
+AppConfig.isIosIpad = async function () {
+    if (!this._loaded) {
+        // alert("getClientIp");
+        await this.initConfig()
+    }
+    return this._isiOSIpad
+
+    // return this._isiOSIpad;
+}
+
+AppConfig.getiPadWidth = function () {
+    if (!this._loaded) {
+        // alert("getClientIp");
+        this.initConfig().then(function () {
+            return this._iPadScreenWidth
+        });
+    } else {
+        return this._iPadScreenWidth;
+    }
 }
 
 AppConfig.exitClockIn = function () {

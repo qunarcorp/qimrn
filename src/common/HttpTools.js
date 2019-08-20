@@ -50,7 +50,7 @@ HttpTools.postJson = function (url, jsonData, headers) {
     return new Promise(function (resolve, reject) {
         fetch(url, {
             method: 'POST',
-            headers: headers,
+            headers:headers,
             body: jsonData,
             credentials: 'include',
         })

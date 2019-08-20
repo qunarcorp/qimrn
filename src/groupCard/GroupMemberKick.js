@@ -11,14 +11,13 @@ import {
     Platform,
     NativeModules,
     DeviceEventEmitter,
-    BackHandler,
+    BackHandler, Alert,
 } from 'react-native';
 import NavCBtn from "../common/NavCBtn";
 import QIMCheckBox from '../common/QIMCheckBox';
-import LoadingView from "../common/LoadingView";
 import AppConfig from "../common/AppConfig";
 
-class GroupMemberAddItem extends Component {
+class GroupMemberKickItem extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -31,14 +30,6 @@ class GroupMemberAddItem extends Component {
         this.setState({item: item});
     }
 
-    getDesc(desc){
-        if(desc === '' || desc === null){
-
-        }else {
-            return <Text style={styles.ckDesc}>{desc}</Text>;
-        }
-    }
-
     render() {
         let headerUri = this.state.item["headerUri"];
         if (headerUri) {
@@ -47,70 +38,23 @@ class GroupMemberAddItem extends Component {
             headerUri = "http://ww2.sinaimg.cn/bmiddle/b432fab8gw1et7zc799jzj20jg0jgabk.jpg";
         }
         let name = this.state.item["name"];
-        let desc = this.state.item["desc"];
-        // let xmppId = item["xmppId"];
-        let hasInGroup = this.state.item["hasInGroup"];
-        if (hasInGroup) {
-            this.state.item.selected = true;
-        } else {
+        return (
+            <View style={styles.cellContentView}>
+                <QIMCheckBox style={styles.ckBox} size={24} checked={this.state.item.selected} onValueChange={this.props.onSelectedChange}/>
+                <Image source={{uri: headerUri}} style={styles.memberHeader}/>
+                <Text style={styles.ckText}>{name}</Text>
 
-        }
-        if (this.state.loadImage || this.state.item.friend) {
-            if (hasInGroup) {
-                return (
-                    <View style={styles.cellContentView}>
-                        <QIMCheckBox style={styles.ckBox} size={24} checked={this.state.item.selected}/>
-                        <Image source={{uri: headerUri}} style={styles.memberHeader}/>
-                        <Text style={styles.ckText}>{name}</Text>
-                        <Text style={styles.memberHasInGroup}>已加群</Text>
-                    </View>
-                );
-            } else {
-                return (
-                    <View style={styles.cellContentView}>
-                        <QIMCheckBox style={styles.ckBox} size={24} checked={this.state.item.selected}
-                                     disabled={hasInGroup}
-                                     onValueChange={this.props.onSelectedChange}/>
-                        <Image source={{uri: headerUri}} style={styles.memberHeader}/>
-                        <View style={{flex:1,flexDirection:'column'}}>
-                            <Text style={styles.ckText}>{name}</Text>
-                            {this.getDesc(desc)}
-                        </View>
-                    </View>
-                );
-            }
-        } else {
-            if (hasInGroup) {
-                return (
-                    <View style={styles.cellContentView}>
-                        <Text style={styles.ckText}>{name}</Text>
-                        <QIMCheckBox style={styles.ckBox} size={24} checked={this.state.item.selected}/>
-                        <Text style={styles.memberHasInGroup}>已加群</Text>
-                    </View>
-                );
-            } else {
-                return (
-                    <View style={styles.cellContentView}>
-                        <View style={{flex:1,flexDirection:'column'}}>
-                            <Text style={styles.ckText}>{name}</Text>
-                            {this.getDesc(desc)}
-                        </View>
-                        <QIMCheckBox style={styles.ckBox} size={24} checked={this.state.item.selected}
-                                     disabled={hasInGroup}
-                                     onValueChange={this.props.onSelectedChange}/>
-                    </View>
-                );
-            }
-        }
+            </View>
+        );
     }
 }
 
-class GroupAddMemberList extends Component {
+class GroupKickMemberList extends Component{
 
     constructor(props) {
         super(props);
         this.state = {
-            data: this.props.data,
+            data:this.props.data,
         };
     }
 
@@ -119,7 +63,7 @@ class GroupAddMemberList extends Component {
     };
 
     releadData(data) {
-        this.setState({data: data});
+        this.setState({data:data});
     }
 
     _renderRowItem = ({item, index}) => {
@@ -128,50 +72,25 @@ class GroupAddMemberList extends Component {
         let headerUri = item.headerUri;
         let name = item.name;
         let xmppId = item.xmppId;
-        let hasInGroup = item.hasInGroup;
-        if (hasInGroup) {
-            return (
-                <View key={this.props.id + index} style={{
-                    width: 46 + this.cap,
-                    height: 80,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    paddingTop: 10
-                }}>
-                    <TouchableOpacity style={styles.memberHeaderBtn}
-                                      disabled={hasInGroup}
-                                      onPress={() => {
-                                          this.props.onItemClick(item);
-                                      }}>
-                        <Image source={{uri: headerUri}} style={styles.memberHeaderRow}/>
-                    </TouchableOpacity>
-                    <Text numberOfLines={1} style={styles.memberNameRow}>{name}</Text>
-                </View>
-            );
-        } else {
-            return (
-                <View key={this.props.id + index} style={{
-                    width: 46 + this.cap,
-                    height: 80,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    paddingTop: 10
-                }}>
-                    <TouchableOpacity style={styles.memberHeaderBtn}
-                                      onPress={() => {
-                                          this.props.onItemClick(item);
-                                      }}>
-                        <Image source={{uri: headerUri}} style={styles.memberHeaderRow}/>
-                    </TouchableOpacity>
-                    <Text numberOfLines={1} style={styles.memberNameRow}>{name}</Text>
+        return (
+            <View key={this.props.id + index} style={{
+                width: 46 + this.cap,
+                height: 80,
+                justifyContent: "center",
+                alignItems: "center",
+                paddingTop: 10
+            }}>
+                <TouchableOpacity style={styles.memberHeaderBtn} onPress={() => {this.props.onItemClick(item);}}>
+                    <Image source={{uri: headerUri}} style={styles.memberHeaderRow}/>
+                </TouchableOpacity>
+                <Text numberOfLines={1} style={styles.memberNameRow}>{name}</Text>
 
-                </View>
-            );
-        }
+            </View>
+        );
     }
 
-    render() {
-        return (
+    render(){
+        return(
             <View style={styles.selectBrowse}>
                 <FlatList
                     horizontal={true}
@@ -185,7 +104,7 @@ class GroupAddMemberList extends Component {
     }
 }
 
-export default class GroupMemberAdd extends Component {
+export default class GroupMemberKick extends Component {
 
     static navigationOptions = ({navigation}) => {
         let headerTitle = "群成员";
@@ -211,98 +130,85 @@ export default class GroupMemberAdd extends Component {
         this.state = {
             groupMembers: [],
             searchList: [],
-            selectUserList: [],
-            //for android share or transfer start
-            isShare: this.props.navigation.state.params.isFromShare,
-            shareMsg: this.props.navigation.state.params.ShareData,
-            isTrans: this.props.navigation.state.params.sel_trans_user,
-            transMsg: this.props.navigation.state.params.trans_msg,
-            //for android share or transfer end
+            selectUserList:[],
         };
         this.groupId = this.props.navigation.state.params.GroupId;
+        this.Permissions = this.props.navigation.state.params.Permissions;
         this.index = 0;
         this.unMount = false;
         let newUser = this.props.navigation.state.params.newSelectUsers;
-        this.selectUsers = newUser ? newUser : {};
+        this.selectUsers = newUser?newUser:{};
         console.log('<================>');
         console.log(this.selectUsers);
         this.selectCellDic = {};
     }
 
     componentDidMount() {
-        // let groupMembers = this.props.navigation.state.params.groupMembers;
-        // let memberList = [];
-        // if (groupMembers == null) {
-        //     return;
-        // }
-        // for (let index = 0, len = groupMembers.length; index < len; index++) {
-        //     memberList.push({"key": "" + (index + 1), "member": groupMembers[index]});
-        // }x
         this.setState({loadImage: false});
         InteractionManager.runAfterInteractions(() => {
             this.setState({loadImage: true});
         });
 
         this.props.navigation.setParams({
-            onSavePress: this.onAddMembers.bind(this),
+            onSavePress: this.onKickMembers.bind(this),
         });
 
-        this.exit = DeviceEventEmitter.addListener('closeAddMembers', function (params) {
+        this.exit = DeviceEventEmitter.addListener('closeKickMembers', function (params) {
             this.closeActivity(params);
         }.bind(this));
 
         //先展示好友
-        this.selectFriends();
+        this.selectMemberForKick();
     }
+    closeActivity(params){
+        //关闭activi
 
-    closeActivity(params) {
-        let isCreateMuc = params["createMuc"];
-        if (isCreateMuc) {
-            //关闭activi
+        // alert('aaaaaa')
+                      //this.props.navigation.goBack();
+       let success =  this.props.navigation.goBack();
+        if(!success){
+
+            let moduleName = "GroupCard";
             if (Platform.OS === 'ios') {
                 AppConfig.exitApp(moduleName);
             } else {
                 BackHandler.exitApp();
             }
         }
+
     }
 
     //添加群成员
-    onAddMembers() {
+    onKickMembers() {
 
-        LoadingView.show('正在加载');
-        let params = {};
-        let groupid = this.groupId ? this.groupId : 'none';
-        let isGroup = this.groupId ? true : false;
-        params['groupId'] = groupid;
-        params['members'] = this.selectUsers;
-        params['isGroup'] = isGroup;
+        Alert.alert(
+            '提示',
+            '您确定要踢出群成员吗？',
+            [
+                {text: '取消', onPress: () => console.log('Cancel  Pressed'), style: 'cancel'},
+                {
+                    text: '确定', onPress: () => {
+                        let params = {};
+                        let groupid = this.groupId?this.groupId:'none';
+                        params['groupId']=groupid;
+                        params['members']=this.selectUsers;
 
-        //for android transfer or share
-        params["isFromShare"] = this.state.isShare;
-        params["ShareData"] = this.state.shareMsg;
-        params["sel_trans_user"] = this.state.isTrans;
-        params["trans_msg"] = this.state.transMsg;
-        NativeModules.QimRNBModule.addGroupMember(params, function (response) {
+                        NativeModules.QimRNBModule.kickGroupMember(params,function (response) {
 
-        }.bind(this));
-
+                        }.bind(this));
+                    }
+                },
+            ],
+            {cancelable: false}
+        )
 
     }
+
+
 
     componentWillUnmount() {
         this.unMount = true;
         this.exit.remove();
-    }
-
-    openUserCard(xmppJid) {
-        if (xmppJid === '' || xmppJid === null) {
-            return;
-        }
-        this.props.navigation.navigate('UserCard', {
-            'userId': xmppJid,
-            'innerVC': true,
-        });
     }
 
     isShowUserSelected(index) {
@@ -321,7 +227,7 @@ export default class GroupMemberAdd extends Component {
         // 只刷新List Item
         this.selectCellDic[itemDic.xmppId].setMember(itemDic);
         let selectedUserIDs = [];
-        for (let key in this.selectUsers) {
+        for(let key in this.selectUsers){
             selectedUserIDs.push(this.selectUsers[key]);
         }
         // 只刷新选择列表
@@ -352,53 +258,17 @@ export default class GroupMemberAdd extends Component {
         // console.log(index);
         //  console.log(item);
         item.selected = this.selectUsers[item.xmppId] ? true : false;
-        let hasInGroup = item.hasInGroup;
         return (
-            <TouchableOpacity key={item.xmppId} disabled={hasInGroup} style={styles.cellContentView} onPress={() => {
+            <TouchableOpacity key={item.xmppId} style={styles.cellContentView} onPress={() => {
                 this.isShowUserSelected(index);
             }}>
-                <GroupMemberAddItem ref={(cellItem) => {
+                <GroupMemberKickItem ref={(cellItem) => {
                     this.selectCellDic[item.xmppId] = cellItem;
                 }} loadImage={this.state.loadImage} item={item} onSelectedChange={() => {
                     this.isShowUserSelected(index);
                 }}/>
             </TouchableOpacity>
         );
-        // let headerUri = item["headerUri"];
-        // if (headerUri) {
-        //
-        // } else {
-        //     headerUri = "http://ww2.sinaimg.cn/bmiddle/b432fab8gw1et7zc799jzj20jg0jgabk.jpg";
-        // }
-        // let name = item["name"];
-        // // let xmppId = item["xmppId"];
-        // if (this.state.loadImage) {
-        //     return (
-        //         <TouchableOpacity key={item.xmppId} style={styles.cellContentView} onPress={() => {
-        //
-        //             // let ckBox = this.ckList[xmppId];
-        //             // ckBox.checked = true;
-        //             this.isShowUserSelected(index);
-        //         }}>
-        //             <Image source={{uri: headerUri}} style={styles.memberHeader}/>
-        //             <Text>{name}</Text>
-        //             <CheckBox value={this.selectUsers[item.xmppId]}/>
-        //
-        //         </TouchableOpacity>
-        //     );
-        // } else {
-        //     return (
-        //         <TouchableOpacity key={item.xmppId} style={styles.cellContentView} onPress={() => {
-        //             // let ckBox = this.ckList[xmppId];
-        //             // ckBox.checked = true;
-        //             this.isShowUserSelected(index);
-        //         }}>
-        //             {this.checkHeaderUri()}
-        //             <Text>{name}</Text>
-        //             <CheckBox value={this.selectUsers[item.xmppId]}/>
-        //         </TouchableOpacity>
-        //     );
-        // }
     }
 
 
@@ -409,11 +279,11 @@ export default class GroupMemberAdd extends Component {
 
     selectUserByText(userText) {
         let params = {};
-        let groupid = this.groupId ? this.groupId : 'none';
+        let groupid = this.groupId?this.groupId:'none';
 
         params['groupId'] = groupid;
         params['searchText'] = userText;
-        NativeModules.QimRNBModule.selectUserListByText(params, function (responce) {
+        NativeModules.QimRNBModule.selectMemberFromGroup(params, function (responce) {
             if (responce.ok) {
                 let userList = responce.UserList;
                 this.selectCellDic = {};
@@ -422,12 +292,13 @@ export default class GroupMemberAdd extends Component {
         }.bind(this));
     }
 
-    selectFriends() {
+    selectMemberForKick() {
         let params = {};
-        let groupid = this.groupId ? this.groupId : 'none';
+        let groupid = this.groupId?this.groupId:'none';
 
         params['groupId'] = groupid;
-        NativeModules.QimRNBModule.selectFriendsForGroupAdd(params, function (responce) {
+        params['affiliation'] = this.Permissions;
+        NativeModules.QimRNBModule.selectGroupMemberForKick(params, function (responce) {
             if (responce.ok) {
                 let userList = responce.UserList;
                 this.selectCellDic = {};
@@ -437,6 +308,10 @@ export default class GroupMemberAdd extends Component {
     }
 
     checkInterval(userText) {
+        if(userText == ""){
+            this.selectMemberForKick();
+            return;
+        }
         if (!(userText.replace(/[\u0391-\uFFE5]/g, "aa").length > 2)) {
             return;
         }
@@ -449,7 +324,7 @@ export default class GroupMemberAdd extends Component {
     render() {
         let selectedUserIDs = [];
         // console.log(this.selectUsers);
-        for (let key in this.selectUsers) {
+        for(let key in this.selectUsers){
             selectedUserIDs.push(this.selectUsers[key]);
         }
         // console.log(selectedUserIDs);
@@ -476,25 +351,15 @@ export default class GroupMemberAdd extends Component {
                         />
                     </View>
                 </View>
-                <GroupAddMemberList ref={(list) => {
-                    this.addMemberList = list;
-                }} data={selectedUserIDs} onItemClick={(item) => {
-
-
-
-                        delete this.selectUsers[item.xmppId];
-                        item.selected = false;
-                        try {
-                            this.selectCellDic[item.xmppId].setMember(item);
-                        }catch (e){
-
-                        }
-                        let selectedUserIDs = [];
-                        for (let key in this.selectUsers) {
-                            selectedUserIDs.push(this.selectUsers[key]);
-                        }
-                        this.addMemberList.releadData(selectedUserIDs);
-
+                <GroupKickMemberList ref={(list) => {this.addMemberList = list;}} data={selectedUserIDs} onItemClick={(item) => {
+                    delete this.selectUsers[item.xmppId];
+                    item.selected = false;
+                    this.selectCellDic[item.xmppId].setMember(item);
+                    let selectedUserIDs = [];
+                    for(let key in this.selectUsers){
+                        selectedUserIDs.push(this.selectUsers[key]);
+                    }
+                    this.addMemberList.releadData(selectedUserIDs);
                 }}/>
                 <View style={styles.line}/>
                 <View style={{flex: 1}}>
@@ -521,20 +386,14 @@ var styles = StyleSheet.create({
         alignItems: "center",
     },
     ckBox: {
-        marginLeft: 15,
+        marginLeft:15,
         marginRight: 15,
     },
     ckText: {
-        flex: 1,
-        textAlignVertical:'center',
+        flex: 1
     },
-    ckDesc: {
-        flex: 1,
-        fontSize: 12,
-        color:'#00CABE',
-    },
-    line: {
-        height: 1
+    line:{
+        height:1
     },
     selectBrowse: {
         flexDirection: "row",
@@ -566,16 +425,6 @@ var styles = StyleSheet.create({
         marginTop: 5,
         height: 16,
     },
-    memberHasInGroup: {
-        fontSize: 9,
-        color: "#999999",
-        width: 100,
-        textAlign: "right",
-        marginTop: 5,
-        height: 16,
-        marginRight: 10,
-        marginBottom: 5,
-    },
     container: {
         flexDirection: 'row',   // 水平排布
         paddingLeft: 10,
@@ -591,7 +440,7 @@ var styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         marginTop: 5,
-        marginLeft: 5,
+        marginLeft:5,
     },
     logo: {//图片logo
         height: 24,
@@ -643,16 +492,16 @@ var styles = StyleSheet.create({
     },
     searchHeader: {
         height: 56,
-        backgroundColor: "#e6e7e9",
+        backgroundColor:"#e6e7e9",
     },
     searchInput: {
         height: 36,
-        marginLeft: 10,
+        marginLeft:10,
         marginRight: 10,
-        marginTop: 9,
-        backgroundColor: "white",
-        borderRadius: 10,
-        flexDirection: "row",
+        marginTop:9,
+        backgroundColor:"white",
+        borderRadius:10,
+        flexDirection:"row",
         borderWidth: 1,
         paddingLeft: 5,
         borderColor: '#ccc',

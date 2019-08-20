@@ -315,9 +315,9 @@ export class TripRoomSelect extends Component {
                         mode="datetime"
                         minDate={moment().format("YYYY-MM-DD HH:mm")}
                         // maxDate={DateUtil.TimeDayAdd(moment().format("YYYY-MM-DD HH:mm"),4)}
-                        format="YYYY-MM-DD"
-                        confirmBtnText="Confirm"
-                        cancelBtnText="Cancel"
+                        format="YYYY-MM-DD HH:mm"
+                        confirmBtnText="确定"
+                        cancelBtnText="取消"
                         showIcon={false}
                         minuteInterval={10}
                         onDateChange={(datetime) => {
@@ -342,8 +342,8 @@ export class TripRoomSelect extends Component {
                             minDate={moment().format("YYYY-MM-DD HH:mm")}
                             // maxDate={DateUtil.TimeDayAdd(moment().format("YYYY-MM-DD HH:mm"),4)}
                             format="YYYY-MM-DD HH:mm"
-                            confirmBtnText="Confirm"
-                            cancelBtnText="Cancel"
+                            confirmBtnText="确定"
+                            cancelBtnText="取消"
                             showIcon={false}
                             minuteInterval={10}
                             onDateChange={(datetime) => {
@@ -360,12 +360,12 @@ export class TripRoomSelect extends Component {
                         <DatePicker
                             style={[TripRoomSelectStyles.tileItem, {white: 180}]}
                             date={this.state.endTime}
-                            minDate={this.state.beginTime}
-                            maxDate={this.state.beginTime}
+                            minDate={moment(this.state.beginTime).format("YYYY-MM-DD HH:mm")}
+                            // maxDate={this.state.beginTime}
                             mode="datetime"
                             format="YYYY-MM-DD HH:mm"
-                            confirmBtnText="Confirm"
-                            cancelBtnText="Cancel"
+                            confirmBtnText="确定"
+                            cancelBtnText="取消"
                             showIcon={false}
                             minuteInterval={10}
                             onDateChange={(datetime) => {
@@ -437,7 +437,14 @@ export class TripRoomSelect extends Component {
 
 
     selectTripArea() {
-        this.props.navigation.navigate('TripAreaSelect', {
+        // this.props.navigation.navigate('TripAreaSelect', {
+        //     // userSelect: selectUsers,
+        //     // beginTime: this.state.beginTime,
+        //     // endTime: this.state.endTime,
+        //     tripAddressNumber: this.state.tripAddressNumber,
+        // });
+
+        this.props.navigation.navigate('TripCitySelect', {
             // userSelect: selectUsers,
             // beginTime: this.state.beginTime,
             // endTime: this.state.endTime,

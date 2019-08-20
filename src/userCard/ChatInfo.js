@@ -283,16 +283,30 @@ export default class ChatInfo extends Component {
 
     }
 
+    getHeaderImage(headerUri){
+        if (headerUri == null || headerUri == '') {
+            return (
+                <TouchableOpacity style={styles.userView} onPress={this.openUserCard.bind(this)}>
+                    <Image source={require('../images/single_chat_icon.png')} style={styles.userHeaderImage}/>
+                    <Text style={styles.userName} numberOfLines={1}>{this.state.name}</Text>
+                </TouchableOpacity>
+            );
+        }else {
+            return (
+                <TouchableOpacity style={styles.userView} onPress={this.openUserCard.bind(this)}>
+                    <Image source={{uri:headerUri}} style={styles.userHeaderImage}/>
+                    <Text style={styles.userName} numberOfLines={1}>{this.state.name}</Text>
+                </TouchableOpacity>
+            );
+        }
+    }
+
     render() {
-        let headerUri = "../images/singleHeaderDefault.png";
         return (
             <View style={styles.wrapper}>
                 <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
                     <View style={styles.headerView}>
-                        <TouchableOpacity style={styles.userView} onPress={this.openUserCard.bind(this)}>
-                            <Image source={{uri: this.state.headerUri ? this.state.headerUri : headerUri}} style={styles.userHeaderImage}/>
-                            <Text style={styles.userName} numberOfLines={1}>{this.state.name}</Text>
-                        </TouchableOpacity>
+                        {this.getHeaderImage(this.state.headerUri)}
                         <TouchableOpacity style={styles.addMemberBtn} onPress={() => {
                             this.addGroupMember();
                         }}>
@@ -382,7 +396,8 @@ var styles = StyleSheet.create({
         height: 10,
     },
     cellTitle: {
-        width: 100,
+        width: 150,
+        fontSize: 14,
         color: "#333333",
     },
     cellValue: {
